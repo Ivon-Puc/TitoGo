@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  email          String   @unique
+  password       String
+  driverLicense  String
+  gender         String
+  shares         Share[]  // Relation to Share table
+  requests       Request[] // Relation to Request table
+}
+
+model Share {
+  id              Int      @id @default(autoincrement())
+  driverId        Int
+  origin          String
+  destination     String
+  departureTime   DateTime
+  spots           Int
+  message         String?
+
+  driver          User     @relation(fields: [driverId], references: [id])
+  requests        Request[] // Relation to Request table
+}
+
+model Request {
+  id             Int      @id @default(autoincrement())
+  shareId        Int
+  userId         Int
+  message        String?
+  status         RequestStatus @default(PENDING)
+  createdAt      DateTime @default(now())
+
+  share          Share    @relation(fields: [shareId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+//docker run --name my_postgres -e POSTGRES_USER=ayush -e POSTGRES_PASSWORD=rawat -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
