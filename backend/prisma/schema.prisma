@@ -14,14 +14,20 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   firstName      String
   lastName       String
-  email          String   @unique
+  email          String    @unique
   password       String
   driverLicense  String
   gender         String
-  shares         Share[]  // Relation to Share table
+
+  // --- CAMPOS ADICIONADOS PARA O TITOGO (RN01) ---
+  senacId           String   @unique
+  statusVerificacao String   @default("PENDENTE")
+  // --- FIM DOS CAMPOS ADICIONADOS ---
+
+  shares         Share[]   // Relation to Share table
   requests       Request[] // Relation to Request table
 }
 
