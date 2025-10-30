@@ -89,7 +89,7 @@ const ShareForm = () => {
     if (formData.from && formData.to) {
       setSearchTriggered(true);
     } else {
-      alert("Please select both origin and destination");
+      alert("Por favor, selecione origem e destino");
     }
   };
 
@@ -107,7 +107,7 @@ const ShareForm = () => {
         }
       );
 
-      toast.success("Trip shared successfully!", {
+  toast.success("Viagem compartilhada com sucesso!", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: true,
@@ -118,7 +118,7 @@ const ShareForm = () => {
       console.log("Trip created:", response.data);
     } catch (error) {
       console.error("Error creating trip:", error);
-      toast.error("Failed to create trip. Please try again.", {
+  toast.error("Falha ao criar viagem. Por favor, tente novamente.", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: true,
@@ -133,13 +133,13 @@ const ShareForm = () => {
     <div className="flex justify-start p-8 space-x-4">
       <form onSubmit={handleSubmit} className="space-y-4 bg-gray-100 p-8 rounded-lg w-96 shadow-md">
         <div>
-          <label className="block text-gray-700">From</label>
+          <label className="block text-gray-700">De</label>
           <input
             type="text"
             name="from"
             value={formData.from}
             onChange={handleChange}
-            placeholder="Type the name of a place"
+            placeholder="Digite o nome de um local"
             className="w-full p-2 mt-1 border rounded-md"
           />
           {originSuggestions.length > 0 && (
@@ -161,13 +161,13 @@ const ShareForm = () => {
           )}
         </div>
         <div>
-          <label className="block text-gray-700">To</label>
+          <label className="block text-gray-700">Para</label>
           <input
             type="text"
             name="to"
             value={formData.to}
             onChange={handleChange}
-            placeholder="Type the name of a place"
+            placeholder="Digite o nome de um local"
             className="w-full p-2 mt-1 border rounded-md"
           />
           {destinationSuggestions.length > 0 && (
@@ -189,7 +189,7 @@ const ShareForm = () => {
           )}
         </div>
         <div>
-          <label className="block text-gray-700">Departure</label>
+          <label className="block text-gray-700">Partida</label>
           <div className="flex space-x-2">
             <input
               type="date"
@@ -208,23 +208,23 @@ const ShareForm = () => {
           </div>
         </div>
         <div>
-          <label className="block text-gray-700">Spots in Your Car</label>
+          <label className="block text-gray-700">Vagas no seu carro</label>
           <input
             type="number"
             name="spots"
             value={formData.spots}
             onChange={handleChange}
-            placeholder="Number of spots"
+            placeholder="Número de vagas"
             className="w-full p-2 mt-1 border rounded-md"
           />
         </div>
         <div>
-          <label className="block text-gray-700">Message</label>
+          <label className="block text-gray-700">Mensagem</label>
           <textarea
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Message..."
+            placeholder="Mensagem..."
             className="w-full p-2 mt-1 border rounded-md"
           />
         </div>
@@ -232,14 +232,14 @@ const ShareForm = () => {
           type="button"
           onClick={handleSearchClick}
           className="w-full px-5 py-3 text-lg font-semibold text-white bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95"
->
-          Search
+          >
+          Buscar
         </button>
         <button
           type="submit"
           className="w-full px-5 py-3 text-lg font-semibold text-white bg-black rounded-lg shadow-lg hover:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95"
         >
-          Share
+          Compartilhar
         </button>
       </form>
 

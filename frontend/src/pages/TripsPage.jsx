@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const TripsPage = () => {
   const [drivingTrips, setDrivingTrips] = useState([]);
@@ -69,20 +69,20 @@ const TripsPage = () => {
     <div className="p-6 font-sans">
       {/* Driving Section */}
       <div className="mb-8">
-        <h2 className="font-bold text-xl mb-4">Driving</h2>
+        <h2 className="font-bold text-xl mb-4">Como motorista</h2>
         <table className="w-full table-auto border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border border-gray-300 px-4 py-2">Origin</th>
-              <th className="border border-gray-300 px-4 py-2">Destination</th>
-              <th className="border border-gray-300 px-4 py-2">Rider Name</th>
-              <th className="border border-gray-300 px-4 py-2">Action</th>
+              <th className="border border-gray-300 px-4 py-2">Origem</th>
+              <th className="border border-gray-300 px-4 py-2">Destino</th>
+              <th className="border border-gray-300 px-4 py-2">Nome do passageiro</th>
+              <th className="border border-gray-300 px-4 py-2">Ação</th>
             </tr>
           </thead>
           <tbody>
             {loadingDriving ? (
               <tr>
-                <td colSpan="4" className="text-center p-4">Loading...</td>
+                <td colSpan="4" className="text-center p-4">Carregando...</td>
               </tr>
             ) : (
               drivingTrips.map((trip) =>
@@ -98,19 +98,19 @@ const TripsPage = () => {
                         className="bg-red-500 text-black font-bold px-4 py-2 rounded mr-2"
                         onClick={() => handleRequestStatusChange(request.id, 'DECLINED')}
                       >
-                        Decline
+                        Recusar
                       </button>
                       <button
                         className="bg-yellow-500 text-black font-bold px-4 py-2 rounded mr-2"
                         onClick={() => handleRequestStatusChange(request.id, 'PENDING')}
                       >
-                        Ignore
+                        Ignorar
                       </button>
                       <button
                         className="bg-green-500 text-black font-bold px-4 py-2 rounded"
                         onClick={() => handleRequestStatusChange(request.id, 'APPROVED')}
                       >
-                        Accept
+                        Aceitar
                       </button>
                     </td>
                   </tr>
@@ -123,20 +123,20 @@ const TripsPage = () => {
 
       {/* Riding Section */}
       <div>
-        <h2 className="font-bold text-xl mb-4">Riding</h2>
+        <h2 className="font-bold text-xl mb-4">Como passageiro</h2>
         <table className="w-full table-auto border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border border-gray-300 px-4 py-2">Origin</th>
-              <th className="border border-gray-300 px-4 py-2">Destination</th>
-              <th className="border border-gray-300 px-4 py-2">Departure Time</th>
+              <th className="border border-gray-300 px-4 py-2">Origem</th>
+              <th className="border border-gray-300 px-4 py-2">Destino</th>
+              <th className="border border-gray-300 px-4 py-2">Horário de partida</th>
               <th className="border border-gray-300 px-4 py-2">Status</th>
             </tr>
           </thead>
           <tbody>
             {loadingRiding ? (
               <tr>
-                <td colSpan="4" className="text-center p-4">Loading...</td>
+                <td colSpan="4" className="text-center p-4">Carregando...</td>
               </tr>
             ) : (
               ridingTrips.map((request) => (

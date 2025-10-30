@@ -23,7 +23,7 @@ const Header = () => {
       href="/"
       className="text-4xl font-bold hover:scale-105 transition-all duration-300"
     >
-      CarPOOL
+      TitoGo
     </a>
     {isLoggedIn && (
       <>
@@ -31,19 +31,19 @@ const Header = () => {
           to="/search"
           className="font-semibold text-xl hover:underline transition-all duration-300"
         >
-          Search
+          Buscar
         </Link>
         <Link
           to="/share"
           className="font-semibold text-xl hover:underline transition-all duration-300"
         >
-          Share
+          Compartilhar
         </Link>
         <Link
           to="/trips"
           className="font-semibold text-xl hover:underline transition-all duration-300"
         >
-          Trips
+          Viagens
         </Link>
       </>
     )}
@@ -54,7 +54,7 @@ const Header = () => {
         onClick={handleLogout}
         className="px-6 py-2 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-all duration-300"
       >
-        Logout
+        Sair
       </button>
     ) : (
       <>
@@ -62,13 +62,13 @@ const Header = () => {
           to="/login"
           className="px-6 py-2 rounded-full font-semibold hover:bg-gray-800 hover:text-white transition-all duration-300"
         >
-          Log in
+          Entrar
         </Link>
         <Link
           to="/register"
           className="px-6 py-2 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition-all duration-300"
         >
-          Sign up
+          Cadastrar
         </Link>
       </>
     )}

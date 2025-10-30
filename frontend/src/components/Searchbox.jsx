@@ -77,25 +77,25 @@ const Searchbox = ({setOriginCoordinates, setDestinationCoordinates, setSearchTr
     if(origin && destination){
       setSearchTriggered(true);
     } else {
-      alert("Please select both origin and destination")
+      alert("Por favor, selecione origem e destino")
     }
   }
 
   return (
     <div className="flex flex-col items-start p-6 space-y-6 bg-gray-100 shadow-lg w-96 fixed top-0 left-0 h-full">
-      <h2 className="text-2xl font-bold">Show Route</h2>
+      <h2 className="text-2xl font-bold">Exibir rota</h2>
 
       {/* for Origin Input */}
       <div className="flex flex-col w-full space-y-4">
         <label htmlFor="origin" className="text-lg font-medium text-gray-700">
-          Origin
+          Origem
         </label>
         <input
           type="text"
           id="origin"
           value={origin}
           onChange={(e) => setOrigin(e.target.value)}
-          placeholder="Enter origin"
+          placeholder="Digite a origem"
           className="px-5 py-3 text-lg border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none border-gray-300"
         />
         {originSuggestions.length > 0 && (
@@ -123,14 +123,14 @@ const Searchbox = ({setOriginCoordinates, setDestinationCoordinates, setSearchTr
           htmlFor="destination"
           className="text-lg font-medium text-gray-700"
         >
-          Destination
+          Destino
         </label>
         <input
           type="text"
           id="destination"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          placeholder="Enter destination"
+          placeholder="Digite o destino"
           className="px-5 py-3 text-lg border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none border-gray-300"
         />
         {destinationSuggestions.length > 0 && (
@@ -153,7 +153,7 @@ const Searchbox = ({setOriginCoordinates, setDestinationCoordinates, setSearchTr
       </div>
 
       <button onClick={handleSearchClick} className="w-full px-5 py-3 text-lg text-white bg-blue-600 rounded-lg shadow hover:bg-blue-800 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-        Search
+        Buscar
       </button>
     </div>
   );

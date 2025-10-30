@@ -85,7 +85,7 @@ function SearchPage() {
 
   const handleSearch = async () => {
     if (!formData.from || !formData.to || !formData.date) {
-      toast.error("Please fill out all fields");
+      toast.error("Por favor, preencha todos os campos");
       return;
     }
 
@@ -103,11 +103,11 @@ function SearchPage() {
         setSearchResults(data);
         setSearchTriggered(true);
       } else {
-        toast.error(data.message || "Error fetching rides");
+  toast.error(data.message || "Erro ao buscar caronas");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("An error occurred while searching for rides");
+  toast.error("Ocorreu um erro ao buscar caronas");
     }
   };
 
@@ -124,14 +124,14 @@ function SearchPage() {
       });
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("Ride request raised successfully");
+        if (response.ok) {
+        toast.success("Solicitação de carona enviada com sucesso");
       } else {
-        toast.error(data.message || "Error raising ride request");
+        toast.error(data.message || "Erro ao enviar solicitação de carona");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("An error occurred while raising the ride request");
+      toast.error("Ocorreu um erro ao enviar a solicitação de carona");
     }
   };
 
@@ -164,16 +164,16 @@ function SearchPage() {
   return (
     <div className="flex">
       <div className="w-1/4 p-4">
-        <h2 className="text-lg font-bold mb-4">Search for Rides</h2>
+        <h2 className="text-lg font-bold mb-4">Pesquisar caronas</h2>
         <div>
-          <label>From</label>
+          <label>De</label>
           <input
             type="text"
             name="from"
             value={formData.from}
             onChange={handleChange}
             className="w-full border mb-2 p-2"
-            placeholder="Enter a location"
+            placeholder="Digite um local"
           />
           {originSuggestions.length > 0 && (
             <ul className="bg-white shadow-lg max-h-60 overflow-auto w-full mt-2 rounded-lg z-20">
@@ -190,14 +190,14 @@ function SearchPage() {
           )}
         </div>
         <div>
-          <label>To</label>
+          <label>Para</label>
           <input
             type="text"
             name="to"
             value={formData.to}
             onChange={handleChange}
             className="w-full border mb-2 p-2"
-            placeholder="Enter destination"
+            placeholder="Digite o destino"
           />
           {destinationSuggestions.length > 0 && (
             <ul className="bg-white shadow-lg max-h-60 overflow-auto w-full mt-2 rounded-lg z-20">
@@ -214,7 +214,7 @@ function SearchPage() {
           )}
         </div>
         <div>
-          <label>Date</label>
+          <label>Data</label>
           <input
             type="datetime-local"
             name="date"
@@ -227,30 +227,30 @@ function SearchPage() {
           onClick={handleSearch}
           className="w-full px-5 py-3 text-lg font-semibold text-white bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95"
         >
-          Search
+          Buscar
         </button>
         <div className="mt-4">
-          <h3 className="text-md font-semibold mb-2">Search Results</h3>
+          <h3 className="text-md font-semibold mb-2">Resultados</h3>
           {searchResults.length > 0 ? (
             searchResults.map((ride, index) => (
               <div key={index} className="border p-2 mb-2">
-                <p>From: {ride.origin}</p>
-                <p>To: {ride.destination}</p>
-                <p>Date: {new Date(ride.departureTime).toLocaleString()}</p>
-                <p>Spots Available: {ride.spots}</p>
+                <p>Origem: {ride.origin}</p>
+                <p>Destino: {ride.destination}</p>
+                <p>Data: {new Date(ride.departureTime).toLocaleString()}</p>
+                <p>Vagas disponíveis: {ride.spots}</p>
                 <p>
-                  Driver: {ride.driver.firstName} {ride.driver.lastName}
+                  Motorista: {ride.driver.firstName} {ride.driver.lastName}
                 </p>
                 <button
                   onClick={() => handleRequestRide(ride.id)}
                   className="mt-2 bg-green-500 text-white px-3 py-1 rounded"
                 >
-                  Request Ride
+                  Solicitar carona
                 </button>
               </div>
             ))
           ) : (
-            <p>No rides found</p>
+            <p>Nenhuma carona encontrada</p>
           )}
         </div>
       </div>

@@ -27,14 +27,14 @@ const LoginPage = () => {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                toast.success("Login successful!");
+                toast.success("Login realizado com sucesso!");
                 window.location.href = "/share"; // Redirect to the share page
             } else {
-                toast.error(data.message || "Login failed!");
+                toast.error(data.message || "Falha no login!");
             }
-        } catch (error) {
+            } catch (error) {
             console.error("Login failed:", error);
-            toast.error("Something went wrong. Please try again.");
+            toast.error("Algo deu errado. Por favor, tente novamente.");
         }
     };    
 
@@ -52,11 +52,11 @@ const LoginPage = () => {
                 {/* Right Column - Login Form */}
                 <div className="w-1/2 p-12 flex flex-col justify-center">
                     <ToastContainer />
-                    <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-center">Entrar</h2>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                                Email
+                                E-mail
                             </label>
                             <input
                                 type="email"
@@ -71,7 +71,7 @@ const LoginPage = () => {
 
                         <div className="mb-6">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                                Password
+                                Senha
                             </label>
                             <input
                                 type="password"
@@ -89,7 +89,7 @@ const LoginPage = () => {
                                 type="submit"
                                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                Sign In
+                                Entrar
                             </button>
                         </div>
                     </form>

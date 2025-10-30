@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import signupImage from "../assets/signup.jpeg"
@@ -84,11 +84,11 @@ const RegisterPage = () => {
                 {/* Right Column - Signup Form */}
                 <div className="w-1/2 p-8 flex flex-col justify-center">
                     <ToastContainer />
-                    <h2 className="text-3xl font-bold mb-8 text-center">Sign Up</h2>
+                    <h2 className="text-3xl font-bold mb-8 text-center">Cadastrar</h2>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-6">
                             <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="firstName">
-                                First Name
+                                Nome
                             </label>
                             <input
                                 type="text"
@@ -103,7 +103,7 @@ const RegisterPage = () => {
 
                         <div className="mb-6">
                             <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="lastName">
-                                Last Name
+                                Sobrenome
                             </label>
                             <input
                                 type="text"
@@ -118,7 +118,7 @@ const RegisterPage = () => {
 
                         <div className="mb-6">
                             <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="email">
-                                Email Address
+                                E-mail
                             </label>
                             <input
                                 type="email"
@@ -133,7 +133,7 @@ const RegisterPage = () => {
 
                         <div className="mb-6">
                             <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="password">
-                                Password
+                                Senha
                             </label>
                             <input
                                 type="password"
@@ -148,7 +148,7 @@ const RegisterPage = () => {
 
                         <div className="mb-6">
                             <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="repeatPassword">
-                                Repeat Password
+                                Repita a senha
                             </label>
                             <input
                                 type="password"
@@ -163,7 +163,7 @@ const RegisterPage = () => {
 
                         <div className="mb-6">
                             <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="driverLicenseId">
-                                Driver's License ID
+                                Número da CNH
                             </label>
                             <input
                                 type="text"
@@ -177,7 +177,7 @@ const RegisterPage = () => {
                         </div>
 
                         <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3">Gender</label>
+                            <label className="block text-gray-700 text-lg font-bold mb-3">Gênero</label>
                             <div className="flex space-x-4">
                                 <label className="flex items-center">
                                     <input
@@ -188,7 +188,7 @@ const RegisterPage = () => {
                                         onChange={handleChange}
                                         className="mr-2"
                                     />
-                                    Male
+                                    Masculino
                                 </label>
                                 <label className="flex items-center">
                                     <input
@@ -199,7 +199,7 @@ const RegisterPage = () => {
                                         onChange={handleChange}
                                         className="mr-2"
                                     />
-                                    Female
+                                    Feminino
                                 </label>
                             </div>
                         </div>
@@ -209,14 +209,14 @@ const RegisterPage = () => {
                                 type="submit"
                                 className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
                             >
-                                Submit
+                                Enviar
                             </button>
                             <button
                                 type="button"
                                 className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 text-lg"
                                 onClick={handleCancel}
                             >
-                                Cancel
+                                Cancelar
                             </button>
                         </div>
                     </form>

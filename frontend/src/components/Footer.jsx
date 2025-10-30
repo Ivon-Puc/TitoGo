@@ -8,13 +8,13 @@ const Footer = () => {
             {/* Project Name with Hover Effect */}
             <div className="mb-4">
               <h2 className="text-2xl font-bold hover:text-gray-400 transition duration-300">
-                Carpool
+                TitoGo
               </h2>
             </div>
   
             {/* Copyright Notice */}
             <div className="mt-4 text-center text-gray-400">
-              <p>&copy; {new Date().getFullYear()} Carpool. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} TitoGo. Todos os direitos reservados.</p>
             </div>
           </div>
         </div>
