@@ -20,7 +20,7 @@ const HomePage = () => {
                 <div className="md:w-1/2 flex justify-center">
                     <img
                         src={homepageImage}
-                        alt="Carpooling illustration"
+                        alt="TitoGo illustration"
                         className="w-3/4 max-w-lg rounded-lg shadow-md"
                     />
                 </div>

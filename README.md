@@ -1,6 +1,6 @@
-﻿# Carpool System
+﻿# TitoGo
 
-Bem-vindo ao repositório da aplicação Carpool! Este projeto é uma aplicação web full-stack criada para facilitar o compartilhamento de caronas entre usuários. Desenvolvido com tecnologias modernas, permite que usuários se cadastrem, façam login, compartilhem viagens, busquem caronas disponíveis e gerenciem solicitações de viagem. Abaixo você encontrará todas as informações necessárias para entender, configurar e contribuir para o projeto.
+Bem-vindo ao repositório da aplicação TitoGo! Este projeto é uma aplicação web full-stack criada para facilitar o compartilhamento de caronas entre usuários. Desenvolvido com tecnologias modernas, permite que usuários se cadastrem, façam login, compartilhem viagens, busquem caronas disponíveis e gerenciem solicitações de viagem. Abaixo você encontrará todas as informações necessárias para entender, configurar e contribuir para o projeto.
 
 ## Pré-visualização
 
@@ -10,10 +10,10 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
   ![Screenshot from 2025-01-28 20-21-58](https://github.com/user-attachments/assets/59d3a06c-c282-4fd8-85ed-212ac5ae390a)
 
 - **Login (Sign in)**
-![Screenshot from 2025-01-28 20-01-05](https://github.com/user-attachments/assets/3ba1ed60-609c-4083-be63-28c7cf953a03)
+  ![Screenshot from 2025-01-28 20-01-05](https://github.com/user-attachments/assets/3ba1ed60-609c-4083-be63-28c7cf953a03)
 
 - **Página inicial (Home Page)**
-![Screenshot from 2025-01-28 20-00-38](https://github.com/user-attachments/assets/7e49fa5a-92a2-4cca-b1af-f46f0e64ba63)
+  ![Screenshot from 2025-01-28 20-00-38](https://github.com/user-attachments/assets/7e49fa5a-92a2-4cca-b1af-f46f0e64ba63)
 
 - **Compartilhar viagem (Share Rides)**
   ![Screenshot from 2025-01-28 20-05-31](https://github.com/user-attachments/assets/b68b117a-b71e-42ad-a247-976c115ce9ea)
@@ -22,9 +22,8 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
   ![Screenshot from 2025-01-28 20-12-17](https://github.com/user-attachments/assets/0e920364-2efc-40f7-9211-61b7e9be1758)
 
 - **Gerenciamento de viagens (Ride Management)**
-![Screenshot from 2025-01-28 20-18-54](https://github.com/user-attachments/assets/dfe26117-e357-4c8a-bb11-c663eb51ea62)
-![Screenshot from 2025-01-28 20-19-57](https://github.com/user-attachments/assets/0261f333-f5ba-455d-9add-791785c4b2be)
-
+  ![Screenshot from 2025-01-28 20-18-54](https://github.com/user-attachments/assets/dfe26117-e357-4c8a-bb11-c663eb51ea62)
+  ![Screenshot from 2025-01-28 20-19-57](https://github.com/user-attachments/assets/0261f333-f5ba-455d-9add-791785c4b2be)
 
 ## Funcionalidades
 
@@ -35,8 +34,6 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
 - **Mapa Interativo**: Integrado com Leaflet e OpenStreetMap para visualização de rotas.
 - **Design da UI**: Construído com Tailwind CSS para uma interface limpa e atraente.
 
-
-
 ## Stack de Tecnologias
 
 - **Frontend**: React, Leaflet & OpenStreetMap (para mapas), Tailwind CSS
@@ -46,11 +43,13 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
 ## Configuração e Instalação
 
 1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/ayushrtwt/carpool_system.git
-   ```
+
+```bash
+git clone https://github.com/Ivon-Puc/TitoGo.git
+```
 
 2. **Instale as dependências**:
+
    - Para o backend:
      ```bash
      cd backend
@@ -63,6 +62,7 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
      ```
 
 3. **Configurar o PostgreSQL**:
+
    - Verifique se o Docker está instalado e em execução.
    - Inicie um container PostgreSQL:
      ```bash
@@ -70,6 +70,7 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
      ```
 
 4. **Configurar variáveis de ambiente**:
+
    - Crie um arquivo `.env` no diretório `backend` com as seguintes variáveis:
      ```env
      PORT=5000
@@ -78,6 +79,7 @@ A seguir estão algumas capturas de tela que mostram a aplicação:
      ```
 
 5. **Executar a aplicação**:
+
    - Inicie o servidor backend:
      ```bash
      cd backend
@@ -107,9 +109,9 @@ Contribuições são bem-vindas! Para contribuir:
 - [Express.js](https://expressjs.com/) pelo framework backend.
 - [Tailwind CSS](https://tailwindcss.com/) pelo estilo.
 - [Leaflet](https://leafletjs.com/) pela integração de mapas.
-- [OpenStreetMap](https://www.openstreetmap.org/) pelos dados de mapa. 
+- [OpenStreetMap](https://www.openstreetmap.org/) pelos dados de mapa.
 - [PostgreSQL](https://www.postgresql.org/) pelo banco de dados.
 
 ---
 
-Boas caronas 
+Boas caronas
