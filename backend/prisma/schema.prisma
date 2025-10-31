@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://titogo_admin:Protonsysdba1986@localhost:5433/flow"
 }
 
 model User {
@@ -62,4 +62,4 @@ enum RequestStatus {
   DECLINED
 }
 
-//docker run --name my_postgres -e POSTGRES_USER=ayush -e POSTGRES_PASSWORD=rawat -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
+//docker run --name my_postgres -e POSTGRES_USER=ayush -e POSTGRES_PASSWORD=rawat -e POSTGRES_DB=mydb -p 5433:5433 -d postgres

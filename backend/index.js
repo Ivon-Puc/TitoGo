@@ -27,22 +27,31 @@ const authenticateToken = (req, res, next) => {
 
 // Register Route
 app.post('/register', async (req, res) => {
-    const { firstName, lastName, email, password, driverLicenseId, gender } = req.body;
+    // 1. ADICIONE 'senacId' AQUI
+    const { firstName, lastName, email, password, driverLicenseId, gender, senacId } = req.body; // <-- MUDANÇA AQUI
 
-    try {
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) return res.status(400).json({ message: 'User already exists' });
+    try {
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await prisma.user.create({
-            data: { firstName, lastName, email, password: hashedPassword, driverLicense: driverLicenseId, gender },
-        });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await prisma.user.create({
+            data: { 
+                firstName, 
+                lastName, 
+                email, 
+                password: hashedPassword, 
+                driverLicense: driverLicenseId, 
+                gender,
+                senacId: senacId // <-- 2. ADICIONE ESTA LINHA
+            },
+        });
 
-        res.status(201).json({ message: 'User registered successfully', user: newUser });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+        res.status(201).json({ message: 'User registered successfully', user: newUser });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
 // Login Route
@@ -228,29 +237,112 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
   
 
   app.patch('/requests/:id/status', authenticateToken, async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-  
-    // Validate status
-    if (!['PENDING', 'APPROVED', 'DECLINED'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status' });
-    }
-  
-    try {
-      const request = await prisma.request.update({
-        where: { id: parseInt(id) },
-        data: { status },
-      });
-  
-      if (!request) {
+    const { id } = req.params;
+    const { status } = req.body;
+  
+    // Validar o status de entrada
+    if (!['PENDING', 'APPROVED', 'DECLINED'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+  
+    try {
+      // Usamos uma transação para garantir a consistência dos dados
+      const updatedRequest = await prisma.$transaction(async (tx) => {
+  
+        // 1. Encontrar o pedido original para saber o seu estado atual e o ID da viagem
+        const request = await tx.request.findUnique({
+          where: { id: parseInt(id) },
+          select: { status: true, shareId: true }
+        });
+  
+        if (!request) {
+          throw new Error('Request not found'); // Lança um erro para cancelar a transação
+        }
+
+        const currentStatus = request.status; // Ex: "PENDING"
+        const shareId = request.shareId;     // Ex: 1
+
+        // ---- LÓGICA DE APROVAÇÃO ----
+        if (status === 'APPROVED') {
+            
+            // Só diminuímos lugares se o pedido estava PENDENTE
+            if (currentStatus !== 'PENDING') {
+                return tx.request.findUnique({ where: { id: parseInt(id) }}); // Já foi tratado, não faz nada
+            }
+
+            // 2. Encontrar a viagem (Share) para verificar se há lugares
+            const share = await tx.share.findUnique({
+                where: { id: shareId },
+                select: { spots: true }
+            });
+
+            // 3. Verificar se há lugares disponíveis
+            if (!share || share.spots <= 0) {
+                throw new Error('No spots available for this ride'); // Cancela a transação
+            }
+
+            // 4. Se há lugares, ATUALIZAR AMBOS:
+            
+            // 4a. Diminuir 1 lugar na viagem (Share)
+            await tx.share.update({
+                where: { id: shareId },
+                data: {
+                    spots: {
+                        decrement: 1 // Operação atómica de decremento
+                    }
+                }
+            });
+
+            // 4b. Atualizar o status do pedido (Request)
+            return tx.request.update({
+                where: { id: parseInt(id) },
+                data: { status: 'APPROVED' },
+            });
+
+        // ---- LÓGICA DE RECUSA (BÓNUS) ----
+        } else if (status === 'DECLINED' || status === 'PENDING') {
+            
+            // Bónus: Se o pedido estava "APPROVED" e agora foi recusado (ou revertido),
+            // devolvemos o lugar à viagem.
+            if (currentStatus === 'APPROVED') {
+                await tx.share.update({
+                    where: { id: shareId },
+                    data: {
+                        spots: {
+                            increment: 1 // Operação atómica de incremento
+                        }
+                    }
+                });
+            }
+
+            // Apenas atualiza o status do pedido
+            return tx.request.update({
+                where: { id: parseInt(id) },
+                data: { status: status },
+            });
+        }
+        
+        // Se o status não for nenhum dos acima (não deve acontecer)
+        return tx.request.findUnique({ where: { id: parseInt(id) }}); 
+      });
+  
+      // Se a transação foi bem-sucedida
+      res.status(200).json({ message: 'Request status updated successfully', request: updatedRequest });
+  
+    } catch (error) {
+      console.error('Error updating request status:', error.message);
+
+      // Enviar mensagens de erro específicas que definimos na transação
+      if (error.message === 'Request not found') {
         return res.status(404).json({ message: 'Request not found' });
       }
-  
-      res.status(200).json({ message: 'Request status updated successfully', request });
-    } catch (error) {
-      console.error('Error updating request status:', error.message);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  });
+      if (error.message === 'No spots available for this ride') {
+        return res.status(400).json({ message: 'No spots available for this ride' });
+      }
+
+      // Erro genérico
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
 
 app.listen(3000, () => console.log('Server running on port 3000'));
