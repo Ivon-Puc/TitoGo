@@ -63,7 +63,7 @@ Notas importantes e recomendações
 
 - Não comite arquivos `.env` com segredos. Use `.env.example` como modelo.
 - Se você quiser rodar as migrations localmente via `prisma migrate dev`, lembre-se que a migração que adiciona `senacId` é `NOT NULL` e tem constraint UNIQUE — isso pode falhar se houver usuários existentes sem `senacId`. No ambiente atual não havia migrations pendentes.
-- Para facilitar o deploy, considere adicionar um `docker-compose.yml` que crie o Postgres e rode os serviços.
+-- Foi adicionado um `docker-compose.yml` como opção de conveniência para levantar um Postgres isolado, mas ele é totalmente opcional — neste ambiente estamos usando um PostgreSQL local (conforme `backend/.env`). Use o `docker-compose.yml` somente se preferir rodar o banco em container.
 
 Se precisar, posso:
 

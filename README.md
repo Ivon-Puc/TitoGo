@@ -63,11 +63,21 @@ git clone https://github.com/Ivon-Puc/TitoGo.git
 
 3. **Configurar o PostgreSQL**:
 
-   - Verifique se o Docker está instalado e em execução.
-   - Inicie um container PostgreSQL:
-     ```bash
-     docker run --name flow-postgres -e POSTGRES_USER=your_user -e POSTGRES_PASSWORD=your_password -e POSTGRES_DB=flow -p 5432:5432 -d postgres
+   Você pode usar um PostgreSQL local já instalado, ou um container Docker — escolha o que for mais conveniente.
+
+   - Usando um PostgreSQL local (exemplo usado neste projeto):
+
+     - O projeto já assume um `DATABASE_URL` apontando para `localhost:5433` no arquivo `backend/.env` (ex.: `postgresql://titogo_admin:Protonsysdba1986@localhost:5433/flow`). Se já tiver o banco local configurado, apenas garanta que `DATABASE_URL` aponte para ele.
+
+   - Usando Docker (opcional):
+
+     - Se preferir subir um container Postgres, o repositório inclui um `docker-compose.yml` no root que cria um Postgres compatível com a configuração padrão do projeto. Para subir via Docker Compose:
+
+     ```powershell
+     docker-compose up -d
      ```
+
+     O `docker-compose.yml` mapeia a porta do host `5433` para a porta `5432` do container por padrão, deixando o `DATABASE_URL` compatível com o valor de exemplo em `backend/.env.example`.
 
 4. **Configurar variáveis de ambiente**:
 
