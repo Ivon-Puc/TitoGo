@@ -94,6 +94,32 @@ git clone https://github.com/Ivon-Puc/TitoGo.git
 6. **Acesse a aplicação**:
    Abra o navegador e acesse `http://localhost:3000`.
 
+## Modo rápido (iniciar backend + frontend)
+
+Se preferir um comando único na raiz do repositório para rodar backend e frontend em desenvolvimento, use o script `dev` que adicionámos:
+
+1. Instale dependências na raiz (isso instalará `concurrently`):
+
+```powershell
+cd 'C:\Users\ivonm\OneDrive\Documents\GitHub\TitoGo'
+npm install
+```
+
+2. Copie o arquivo de exemplo de variáveis de ambiente e preencha os valores reais (não comite `.env`):
+
+```powershell
+copy .\backend\.env.example .\backend\.env
+# edite .\backend\.env e preencha DATABASE_URL e JWT_SECRET
+```
+
+3. Inicie ambos com um único comando:
+
+```powershell
+npm run dev
+```
+
+Observação: o backend por padrão usa a porta definida em `backend/.env` (ex.: 5000). O frontend vem configurado para rodar em `3000`.
+
 ## Como contribuir
 
 Contribuições são bem-vindas! Para contribuir:
