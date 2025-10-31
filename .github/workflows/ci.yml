@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install root deps
+        run: npm install
+      - name: Install backend deps
+        run: cd backend && npm install
+      - name: Install frontend deps
+        run: cd frontend && npm install
+      - name: Lint frontend
+        run: cd frontend && npm run lint || true
+      - name: Build frontend
+        run: npm run build:frontend

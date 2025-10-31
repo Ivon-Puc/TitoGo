@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from "react";
 
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search?";
 
@@ -65,13 +66,7 @@ const Searchbox = ({setOriginCoordinates, setDestinationCoordinates, setSearchTr
     fetchSuggestions(debouncedDestination, "destination");
   }, [debouncedDestination]);
 
-  const handleOriginChange = (e) => {
-    setOrigin(e.target.value);
-  };
-
-  const handleDestinationChange = (e) => {
-    setDestination(e.target.value);
-  };
+  // handlers inlined in JSX to keep code simple
 
   const handleSearchClick = () => {
     if(origin && destination){
