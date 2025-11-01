@@ -26,22 +26,39 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ==========================================================
-// ROTA DE REGISTO CORRIGIDA
+// ROTA DE REGISTO CORRIGIDA (AGORA COM VALIDAÇÃO DE DOMÍNIO)
 // ==========================================================
 app.post('/register', async (req, res) => {
-    // 1. O 'gender' (gênero) que recebemos aqui é um STRING (ex: "masculino")
     const { firstName, lastName, email, password, driverLicenseId, gender, senacId } = req.body;
 
-    // 2. [A CORREÇÃO] Vamos "mapear" (traduzir) o string para o Enum do Prisma
-    let genderEnum;
-    if (gender === 'masculino' || gender === 'MALE') {
-      genderEnum = 'MALE';
-    } else if (gender === 'feminino' || gender === 'FEMALE') {
-      genderEnum = 'FEMALE';
-    } else {
-      genderEnum = 'OTHER'; // O nosso valor "fallback" (de recurso)
+    // 1. [NOVA VALIDAÇÃO] Definimos os domínios permitidos
+    const dominiosPermitidos = [
+      '@sp.senac.br',
+      '@senacsp.edu.br'
+    ];
+
+    // 2. [NOVA VALIDAÇÃO] Verificamos se o 'senacId' termina com um dos domínios
+    // Usamos 'some()' que verifica se 'pelo menos um' item na lista é verdadeiro
+    const dominioValido = dominiosPermitidos.some(dominio => senacId.endsWith(dominio));
+
+    if (!dominioValido) {
+      // 3. [NOVA VALIDAÇÃO] Se não for válido, rejeitamos o registo imediatamente.
+      return res.status(400).json({ 
+        message: 'ID Senac inválido. O e-mail institucional deve terminar com @sp.senac.br ou @senacsp.edu.br' 
+      });
     }
 
+    // 4. [Tradução do Gênero] (A nossa correção anterior, que mantemos)
+    let genderEnum;
+    if (gender === 'masculino' || gender === 'MALE') {
+      genderEnum = 'MALE';
+    } else if (gender === 'feminino' || gender === 'FEMALE') {
+      genderEnum = 'FEMALE';
+    } else {
+      genderEnum = 'OTHER';
+    }
+
+    // 5. [Lógica de Registo] (O resto do código que já tínhamos)
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) return res.status(400).json({ message: 'User already exists' });
@@ -53,13 +70,8 @@ app.post('/register', async (req, res) => {
                 lastName, 
                 email, 
                 password: hashedPassword, 
-                
-                // [CORREÇÃO 2] Trata o 'driverLicense' como nulo se for vazio
                 driverLicense: driverLicenseId || null, 
-                
-                // 3. Usamos a nossa variável 'traduzida' aqui
                 gender: genderEnum, 
-                
                 senacId 
             },
         });
@@ -67,6 +79,9 @@ app.post('/register', async (req, res) => {
         res.status(201).json({ message: 'User registered successfully', user: newUser });
     } catch (error) {
         console.error('Error:', error);
+        // [NOTA] Se o 'senacId' (ou 'email') for duplicado, o 'catch' aqui
+        // vai apanhar o erro da base de dados (P2002) e devolver 500.
+        // Isto pode ser melhorado no futuro para devolver um 400.
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
