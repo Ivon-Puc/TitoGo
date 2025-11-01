@@ -31,20 +31,24 @@ const Header = () => {
     
     const linkStyle = isMobile ? mobileLinkClass : desktopLinkClass;
 
-    return (
-      <>
-        <NavLink to="/search" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
-          Buscar
-        </NavLink>
-        <NavLink to="/share" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
-          Compartilhar
-        </NavLink>
-        <NavLink to="/trips" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
-          Viagens
-        </NavLink>
-      </>
-    );
-  };
+return (
+      <>
+        <NavLink to="/search" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
+          Buscar
+        </NavLink>
+        <NavLink to="/share" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
+          Compartilhar
+        </NavLink>
+        <NavLink to="/trips" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
+          Viagens
+        </NavLink>
+      {/* [NOVO] Adicione o Link do Perfil aqui */}
+      <NavLink to="/profile" className={linkStyle} onClick={() => setIsMenuOpen(false)}>
+        Perfil
+      </NavLink>
+      </>
+    );
+  };
 
   return (
     // O 'header' agora tem padding (espaçamento) mobile-first
