@@ -462,7 +462,7 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
     } else if (gender === 'feminino' || gender === 'FEMALE') {
         genderEnum = 'FEMALE';
     } else {
-        genderEnum = 'OTHER'; // O nosso valor "fallback"
+        genderEnum = 'OTHER';
     }
 
     try {
@@ -475,7 +475,7 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
                 gender: genderEnum,
             },
             // Selecionamos o que queremos devolver para o frontend
-            select: { id: true, firstName: true, email: true, gender: true },
+            select: { id: true, firstName: true, lastName: true, email: true, driverLicense: true, gender: true, senacId: true, statusVerificacao: true, role: true },
         });
 
         res.status(200).json({ 
@@ -485,7 +485,6 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Erro ao atualizar perfil:', error);
-        // O erro P2025 é do Prisma para "Record not found" (neste caso, o utilizador)
         if (error.code === 'P2025') {
             return res.status(404).json({ message: 'Perfil do usuário não encontrado.' });
         }
