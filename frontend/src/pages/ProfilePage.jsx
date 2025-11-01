@@ -1,5 +1,3 @@
-// frontend/src/pages/ProfilePage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -21,19 +19,18 @@ const ProfilePage = () => {
     // 1. Estados
     const [profile, setProfile] = useState(initialProfileState);
     const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false); // [NOVO] Estado para o botão Salvar
     const navigate = useNavigate();
 
     // 2. Função para carregar os dados do perfil (GET /api/profile)
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                // Chama a rota protegida
                 const response = await api.get('/api/profile'); 
                 setProfile(response.data);
                 setLoading(false);
             } catch (err) {
                 setLoading(false);
-                // Se for um erro de autenticação, redireciona para o login
                 if (err.response && (err.response.status === 401 || err.response.status === 403)) {
                     localStorage.removeItem('token');
                     navigate('/login');
@@ -47,7 +44,7 @@ const ProfilePage = () => {
         fetchProfile();
     }, [navigate]);
 
-    // Lida com a mudança de campos (usaremos isto para o PUT na próxima etapa)
+    // Lida com a mudança de campos
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setProfile(prevProfile => ({
@@ -56,7 +53,36 @@ const ProfilePage = () => {
         }));
     };
 
-    // 3. Renderização
+    // [NOVO] 3. Função para salvar o perfil (PUT /api/profile)
+    const handleSaveProfile = async (e) => {
+        e.preventDefault();
+        setIsSaving(true); // Ativa o estado de salvamento
+
+        try {
+            // Dados que podem ser atualizados (e que o backend espera)
+            const dataToUpdate = {
+                firstName: profile.firstName,
+                lastName: profile.lastName,
+                // Garantimos que enviamos null se estiver vazio (CNH é opcional no backend)
+                driverLicense: profile.driverLicense || null, 
+                gender: profile.gender, 
+            };
+
+            const response = await api.put('/api/profile', dataToUpdate); 
+            
+            // Sucesso: Atualiza o estado local com a resposta do backend
+            setProfile(response.data.user); 
+            toast.success(response.data.message); 
+            
+        } catch (err) {
+            toast.error('Falha ao salvar: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setIsSaving(false); // Desativa o estado de salvamento
+        }
+    };
+
+
+    // 4. Renderização
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-100 text-indigo-600 font-bold">Carregando perfil...</div>;
     }
@@ -66,6 +92,7 @@ const ProfilePage = () => {
                         ? 'text-green-600' 
                         : profile.statusVerificacao === 'REPROVADO' 
                         ? 'text-red-600' 
+                        ? 'text-yellow-600' // Adicionei um fallback aqui
                         : 'text-yellow-600';
     
     const roleColor = profile.role === 'ADMIN' ? 'text-indigo-600' : 'text-gray-500';
@@ -92,8 +119,8 @@ const ProfilePage = () => {
                     </p>
                 </div>
 
-                {/* Formulário de Perfil (Ainda apenas para exibição) */}
-                <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}> 
+                {/* Formulário de Perfil (LIGADO À FUNÇÃO PUT) */}
+                <form className="mt-8 space-y-6" onSubmit={handleSaveProfile}> 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         
                         {/* Nome */}
@@ -130,14 +157,17 @@ const ProfilePage = () => {
                         </div>
                     </div>
 
-                    {/* Botão de Salvar (Ainda não funcional) */}
+                    {/* Botão de Salvar (AGORA FUNCIONAL) */}
                     <div>
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 opacity-50 cursor-not-allowed"
-                            disabled // Desativado até implementarmos a rota PUT
+                            // Mudámos o 'disabled' para o nosso novo estado
+                            disabled={isSaving} 
+                            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                                isSaving ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            }`}
                         >
-                            Salvar Alterações (Aguardando Rota PUT)
+                            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                         </button>
                     </div>
                 </form>
