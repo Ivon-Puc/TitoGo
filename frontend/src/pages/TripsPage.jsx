@@ -152,4 +152,54 @@ function TripsPage() {
               
               {/* Mostrar pedidos para esta viagem */}
               <h5 style={{ fontWeight: 'bold', marginTop: '10px' }}>
-                Pedidos recebidos ({trip.
+                Pedidos recebidos ({trip.requests.length}):
+              </h5>
+              {trip.requests.length > 0 ? (
+                trip.requests.map((req) => (
+                  <div key={req.id} style={styles.requestItem}>
+                    <p>
+                      <strong>Passageiro:</strong> {req.user.firstName} {req.user.lastName} <br/>
+                      <strong>Estado:</strong> {req.status}
+                    </p>
+                    {/* [FUNCIONALIDADE FUTURA] Botões de Aprovar/Recusar aqui */}
+                    {req.status === 'PENDING' && (
+                      <div style={{marginTop: '5px'}}>
+                        <button style={styles.approveButton}>Aprovar</button>
+                        <button style={styles.declineButton}>Recusar</button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p style={{ ...styles.tripDetails, ...styles.requestItem, borderTop: 'none', marginLeft: '0', paddingTop: '5px' }}>
+                  Nenhum pedido ainda.
+                </p>
+              )}
+            </div>
+          ))
+        )}
+      </section>
+
+      {/* Secção 2: Viagens que eu vou apanhar */}
+      <section>
+        <h3 style={styles.subtitle}>Viagens que pedi</h3>
+        {ridingRequests.length === 0 ? (
+          <p>Ainda não pediu nenhuma viagem.</p>
+        ) : (
+          ridingRequests.map((request) => (
+            <div key={request.id} style={styles.tripItem}>
+              <div style={styles.tripDetails}>
+                <p><strong>De:</strong> {request.share.origin}</p>
+                <p><strong>Para:</strong> {request.share.destination}</p>
+                <p><strong>Data:</strong> {new Date(request.share.departureTime).toLocaleString('pt-BR')}</p>
+                <p><strong>Meu estado:</strong> {request.status}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default TripsPage;
