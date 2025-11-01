@@ -409,5 +409,43 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
     }
   });
 
+// ==========================================================
+// ROTA DE PERFIL: Obter dados do utilizador logado
+// ==========================================================
+app.get('/api/profile', authenticateToken, async (req, res) => {
+    // O ID do utilizador está no token, que é adicionado ao req.user
+    const userId = req.user.id;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            // Selecionamos todos os campos (exceto a senha)
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                driverLicense: true,
+                gender: true,
+                senacId: true,
+                statusVerificacao: true,
+                role: true,
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'Perfil do usuário não encontrado.' });
+        }
+
+        res.status(200).json(user);
+
+    } catch (error) {
+        console.error('Erro ao buscar perfil:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+// ==========================================================
+// FIM DA ROTA DE PERFIL
+// ==========================================================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
