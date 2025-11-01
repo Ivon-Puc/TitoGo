@@ -1,66 +1,102 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// CÓDIGO CORRIGIDO
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // <-- ESTA É A MUDANÇA
+  url      = env("DATABASE_URL")
 }
 
-model User {
-  id             Int       @id @default(autoincrement())
-  firstName      String
-  lastName       String
-  email          String    @unique
-  password       String
-  driverLicense  String
-  gender         String
+// ===============================================
+// NOVOS ENUMS PARA MELHORAR A INTEGRIDADE DOS DADOS
+// ===============================================
 
-  // --- CAMPOS ADICIONADOS PARA O TITOGO (RN01) ---
-  senacId           String   @unique
-  statusVerificacao String   @default("PENDENTE")
-  // --- FIM DOS CAMPOS ADICIONADOS ---
-
-  shares         Share[]   // Relation to Share table
-  requests       Request[] // Relation to Request table
+// [ADICIONADO] O nosso novo sistema de Cargos
+enum Role {
+  USER
+  ADMIN
 }
 
-model Share {
-  id              Int      @id @default(autoincrement())
-  driverId        Int
-  origin          String
-  destination     String
-  departureTime   DateTime
-  spots           Int
-  message         String?
-
-  driver          User     @relation(fields: [driverId], references: [id])
-  requests        Request[] // Relation to Request table
+// [MELHORIA] Um enum para Gênero (em vez de String)
+enum Gender {
+  MALE
+  FEMALE
+  OTHER // Boa prática adicionar
 }
 
-model Request {
-  id             Int      @id @default(autoincrement())
-  shareId        Int
-  userId         Int
-  message        String?
-  status         RequestStatus @default(PENDING)
-  createdAt      DateTime @default(now())
-
-  share          Share    @relation(fields: [shareId], references: [id])
-  user           User     @relation(fields: [userId], references: [id])
+// [MELHORIA] Um enum para o Status de Verificação (em vez de String)
+enum StatusVerificacao {
+  PENDENTE
+  APROVADO
+  REPROVADO
 }
 
+// O seu enum de Status de Pedido (já estava correto)
 enum RequestStatus {
   PENDING
   APPROVED
   DECLINED
 }
 
-//docker run --name my_postgres -e POSTGRES_USER=ayush -e POSTGRES_PASSWORD=rawat -e POSTGRES_DB=mydb -p 5433:5433 -d postgres
+
+// ===============================================
+// NOSSOS MODELOS (TABELAS)
+// ===============================================
+
+model User {
+  id            Int       @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String    @unique
+  password      String
+  
+  // [MELHORIA] Mudei para 'String?' (opcional). 
+  // Um "usuário" não precisa ter uma CNH para se registar, apenas para dirigir.
+  driverLicense String?
+  
+  // [MELHORIA] Agora usa o 'enum Gender'
+  gender        Gender
+  
+  senacId       String    @unique
+  
+  // [MELHORIA] Agora usa o 'enum StatusVerificacao'
+  statusVerificacao StatusVerificacao @default(PENDENTE)
+
+  // [ADICIONADO] O novo campo de Cargo. 
+  // Por defeito, todos os novos usuários são 'USER'.
+  role          Role      @default(USER)
+
+  // Relações
+  shares        Share[]
+  requests      Request[]
+}
+
+model Share {
+  id            Int       @id @default(autoincrement())
+  driverId      Int
+  origin        String
+  destination   String
+  departureTime DateTime
+  spots         Int
+  message       String?
+
+  // Relações
+  driver        User      @relation(fields: [driverId], references: [id])
+  requests      Request[]
+}
+
+model Request {
+  id            Int           @id @default(autoincrement())
+  shareId       Int
+  userId        Int
+  message       String?
+  status        RequestStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+
+  // Relações
+  share         Share         @relation(fields: [shareId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+}

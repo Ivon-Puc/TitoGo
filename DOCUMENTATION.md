@@ -70,3 +70,17 @@ Se precisar, posso:
 - Adicionar um seed script para popular dados de teste.
 - Criar `docker-compose.yml` para DB + apps.
 - Adicionar lint + CI básico (GitHub Actions) para checks automáticos.
+
+enum Role: Adicionei o enum que define os nossos cargos (USER e ADMIN).
+
+role Role @default(USER): Adicionei o novo campo ao model User. O @default(USER) é crucial, pois garante que a sua rota de registo atual continue a funcionar, atribuindo todos os novos utilizadores como USER automaticamente.
+
+enum Gender: Criei um enum para gender (gênero).
+
+gender Gender: Mudei o campo gender no model User de String para o nosso novo enum Gender.
+
+enum StatusVerificacao: Criei um enum para o seu statusVerificacao.
+
+statusVerificacao StatusVerificacao @default(PENDENTE): Mudei o campo no model User de String para o nosso novo enum.
+
+driverLicense String?: 🌟 Melhoria de Lógica: Mudei a CNH (driverLicense) de String (obrigatório) para String? (opcional). Faz mais sentido que um utilizador possa registar-se na aplicação (para ser passageiro) sem ter uma CNH.
