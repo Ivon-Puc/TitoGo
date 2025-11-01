@@ -1,28 +1,27 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import api from '../services/api'; 
-// [IMPORTANTE] Precisamos disto para redirecionar o utilizador após o login
 import { useNavigate } from 'react-router-dom'; 
+// 1. [NOVO] Importar o nosso hook 'useAuth'
+import { useAuth } from '../context/AuthContext';
 
 /**
- * Página de Login - Versão com Layout Melhorado
+ * Página de Login - Atualizada para usar o AuthContext
  */
 function LoginPage() {
-  // Estados para o formulário
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  // Estados de feedback
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Hook do React Router para navegar
   const navigate = useNavigate();
+  // 2. [NOVO] Pegar a função 'login' do nosso contexto
+  const { login } = useAuth(); 
 
-  // --- Estilos CSS-in-JS (Consistentes com a RegisterPage) ---
+  // --- Os Estilos (styles) permanecem exatamente os mesmos ---
   const styles = {
     pageContainer: {
       padding: '20px',
-      maxWidth: '400px', // Mais estreito para login
+      maxWidth: '400px',
       margin: '40px auto',
       border: '1px solid #ddd',
       borderRadius: '8px',
@@ -30,18 +29,18 @@ function LoginPage() {
     },
     form: {
       display: 'flex',
-      flexDirection: 'column', // Campos uns em cima dos outros
-      gap: '15px' // Espaço entre cada campo
+      flexDirection: 'column',
+      gap: '15px'
     },
     inputGroup: {
       display: 'flex',
-      flexDirection: 'column', // Label em cima do input
+      flexDirection: 'column',
       gap: '5px'
     },
     input: {
       width: '100%',
       padding: '10px',
-      boxSizing: 'border-box', // Garante que o padding não quebra o layout
+      boxSizing: 'border-box',
       borderRadius: '4px',
       border: '1px solid #ccc'
     },
@@ -66,32 +65,34 @@ function LoginPage() {
   };
   // --- Fim dos Estilos ---
 
-  /**
-   * Função chamada quando o formulário de login é submetido
-   */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-       const response = await api.post('/login', {
+      const response = await api.post('/login', {
         email: email,
         password: password,
       });
 
-      // 2. SUCESSO! Guardamos o token
       const token = response.data.token;
-      localStorage.setItem('token', token);
-      
-      // Atualizamos o 'header' padrão do axios para pedidos futuros
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // 3. [MELHORIA] Redirecionamos o utilizador para a página principal
+      // 3. [A GRANDE MUDANÇA]
+      // Em vez de mexer no localStorage e no axios aqui...
+      // localStorage.setItem('token', token);
+      // api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // ...nós apenas chamamos a nossa função 'login' centralizada!
+      login(token); 
+
+      // A função 'login' (dentro do AuthContext) vai fazer tudo isso
+      // e, o mais importante, vai ATUALIZAR O ESTADO GLOBAL.
+
+      // 4. Redirecionamos o utilizador
       navigate('/'); // Ou '/viagens'
 
     } catch (err) {
-      // 4. FALHA
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
@@ -99,22 +100,19 @@ function LoginPage() {
       }
       console.error("Falha no login:", err);
     } finally {
-      // 5. Paramos o loading
       setLoading(false);
     }
   };
 
-  // 6. O JSX (HTML) agora usa os estilos
+  // O JSX (HTML) permanece exatamente o mesmo
   return (
     <div style={styles.pageContainer}>
       <h2>Login - TitoGo</h2>
       
       <form onSubmit={handleLogin} style={styles.form}>
         
-        {/* Mostra o erro, se existir */}
         {error && <p style={styles.errorMsg}>{error}</p>}
 
-        {/* Campo de Email */}
         <div style={styles.inputGroup}>
           <label htmlFor="email">Email:</label>
           <input
@@ -128,7 +126,6 @@ function LoginPage() {
           />
         </div>
         
-        {/* Campo de Senha */}
         <div style={styles.inputGroup}>
           <label htmlFor="password">Senha:</label>
           <input
@@ -142,7 +139,6 @@ function LoginPage() {
           />
         </div>
         
-        {/* Botão de Submissão */}
         <button 
           type="submit" 
           disabled={loading}
