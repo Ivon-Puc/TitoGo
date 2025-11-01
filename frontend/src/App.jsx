@@ -8,6 +8,7 @@ import SearchPage from './pages/SearchPage'
 import TripsPage from './pages/TripsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ProfilePage from './pages/ProfilePage';
 // (O seu Footer, se tiver um)
 // import Footer from './components/Footer' 
 
@@ -19,17 +20,20 @@ function App() {
       {/* O Header fica fora do 'main' */}
       <Header />
       
-      {/* O 'main' agora guarda o conteúdo da página */}
-      <main className="flex-grow">
+{/* O 'main' agora guarda o conteúdo da página */}
+      <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          {/* Adicione a nova rota do perfil aqui */}
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} /> 
+
           <Route path="/share" element={<ProtectedRoute><ShareForm /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
           <Route path="/trips" element={<ProtectedRoute><TripsPage /></ProtectedRoute>} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>
-      </main>
+      </main>
 
       {/* (Se tiver um Footer, ele viria aqui) */}
       {/* <Footer /> */}
