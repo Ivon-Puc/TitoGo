@@ -8,9 +8,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// CÓDIGO CORRIGIDO
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://titogo_admin:Protonsysdba1986@localhost:5433/flow"
+  url      = env("DATABASE_URL") // <-- ESTA É A MUDANÇA
 }
 
 model User {

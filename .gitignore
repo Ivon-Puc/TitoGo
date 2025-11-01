@@ -1,5 +1,6 @@
-﻿# Ignora as dependências do frontend
+﻿# Ignora as dependências da raiz (ex: concurrently)
 /node_modules
 
-# Ignora o ficheiro .env do frontend (se existir)
-/.env
+# Ignora TODOS os ficheiros .env (Segurança MÁXIMA!)
+# NUNCA envie ficheiros .env para o GitHub
+**/.env
