@@ -67,7 +67,7 @@ git clone https://github.com/Ivon-Puc/TitoGo.git
 
    - Usando um PostgreSQL local (exemplo usado neste projeto):
 
-     - O projeto já assume um `DATABASE_URL` apontando para `localhost:5433` no arquivo `backend/.env` (ex.: `postgresql://titogo_admin:Protonsysdba1986@localhost:5433/flow`). Se já tiver o banco local configurado, apenas garanta que `DATABASE_URL` aponte para ele.
+     - O projeto já assume um `DATABASE_URL` apontando para `localhost:xxxx` no arquivo `backend/.env` (ex.: `postgresql://xxxxxxx:xxxxxxxxxx@localhost:5433/flow`). Se já tiver o banco local configurado, apenas garanta que `DATABASE_URL` aponte para ele.
 
    - Usando Docker (opcional):
 
