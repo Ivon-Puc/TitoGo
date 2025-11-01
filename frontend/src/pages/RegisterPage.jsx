@@ -23,7 +23,7 @@ const RegisterPage = () => {
         e.preventDefault();
     
         if (formData.password !== formData.repeatPassword) {
-            toast.error("Passwords do not match");
+            toast.error("As senhas não coincidem");
             return;
         }
     
@@ -38,7 +38,7 @@ const RegisterPage = () => {
     
             const data = await response.json();
             if (response.ok) {
-                toast.success("User registered successfully!");
+                toast.success("Usuário registrado com sucesso!");
                 setFormData({
                     firstName: "",
                     lastName: "",
@@ -52,8 +52,8 @@ const RegisterPage = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error("An error occurred during registration. Please try again.");
-            console.error('Error during registration:', error);
+            toast.error("Ocorreu um erro durante o registro. Por favor, tente novamente.");
+            console.error('Erro durante o registro:', error);
         }
     };
 
@@ -183,8 +183,8 @@ const RegisterPage = () => {
                                     <input
                                         type="radio"
                                         name="gender"
-                                        value="male"
-                                        checked={formData.gender === 'male'}
+                                        value="masculino"
+                                        checked={formData.gender === 'masculino'}
                                         onChange={handleChange}
                                         className="mr-2"
                                     />
@@ -194,8 +194,8 @@ const RegisterPage = () => {
                                     <input
                                         type="radio"
                                         name="gender"
-                                        value="female"
-                                        checked={formData.gender === 'female'}
+                                        value="feminino"
+                                        checked={formData.gender === 'feminino'}
                                         onChange={handleChange}
                                         className="mr-2"
                                     />

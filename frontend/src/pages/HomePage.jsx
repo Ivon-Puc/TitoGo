@@ -20,14 +20,14 @@ const HomePage = () => {
                 <div className="md:w-1/2 flex justify-center">
                     <img
                         src={homepageImage}
-                        alt="TitoGo illustration"
+                        alt="Ilustração TitoGo"
                         className="w-3/4 max-w-lg rounded-lg shadow-md"
                     />
                 </div>
             </div>
             <div className="p-8">
                 {/* Feature Heading */}
-                <h2 className="text-4xl font-bold mb-4 text-left">Características</h2>
+                <h2 className="text-4xl font-bold mb-4 text-left">Recursos</h2>
 
                 {/* Horizontal Sections */}
                 <div className="flex flex-col md:flex-row gap-4">
@@ -46,7 +46,7 @@ const HomePage = () => {
                     <div className="flex-shrink-0">
                         <img
                         src={feature1} 
-                        alt="Search Icon"
+                        alt="Ícone de Pesquisa"
                         className="w-30 h-30" 
                         />
                     </div>
@@ -69,7 +69,7 @@ const HomePage = () => {
                     <div className="flex-shrink-0">
                         <img
                         src={feature2} 
-                        alt="Search Icon"
+                        alt="Ícone de Compartilhamento"
                         className="w-30 h-30" 
                         />
                     </div>
@@ -92,7 +92,7 @@ const HomePage = () => {
                     <div className="flex-shrink-0">
                         <img
                         src={feature3} 
-                        alt="Search Icon"
+                        alt="Ícone de Caronas"
                         className="w-30 h-30" 
                         />
                     </div>

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // 1. Definimos a URL base da nossa API
-// (O seu script 'npm run dev' já separou isto na porta 5000)
+// CÓDIGO CORRIGIDO
 const api = axios.create({
-  baseURL: 'http://localhost:5000', 
+  baseURL: 'https://titogo.onrender.com', // <-- ESTA É A MUDANÇA
 });
 
 // 2. O "Intercetor": A parte mais importante

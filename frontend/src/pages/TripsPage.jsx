@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-// 1. Importamos o nosso 'api' (para fazer pedidos autenticados)
+// 1. Importamos nossa 'api' (para fazer requisições autenticadas)
 import api from '../services/api';
 // (Opcional: para navegar se houver erro)
 // import { useNavigate } from 'react-router-dom'; 
 
 /**
- * Página para o utilizador ver as suas viagens.
- * Mostra as viagens que está a conduzir E os pedidos que fez.
+ * Página para o usuário ver suas viagens.
+ * Mostra as viagens que está dirigindo E os pedidos que fez.
  */
 function TripsPage() {
   // 2. Estados para guardar os dados vindos do backend
-  const [drivingTrips, setDrivingTrips] = useState([]); // Viagens que eu conduzo
+  const [drivingTrips, setDrivingTrips] = useState([]); // Viagens que eu dirijo
   const [ridingRequests, setRidingRequests] = useState([]); // Viagens que eu pedi
   
-  // Estados para controlo do ecrã
-  const [loading, setLoading] = useState(true); // Começa a carregar
+  // Estados para controle da tela
+  const [loading, setLoading] = useState(true); // Começa carregando
   const [error, setError] = useState('');
 
   // const navigate = useNavigate();
@@ -23,18 +23,18 @@ function TripsPage() {
   // Isto corre UMA VEZ, assim que o componente é montado no ecrã.
   useEffect(() => {
     // Função 'async' para podermos usar 'await'
-    const fetchTrips = async () => {
+      const fetchTrips = async () => {
       try {
         setLoading(true);
         setError('');
 
-        // 4. FAZER OS PEDIDOS (autenticados automaticamente pelo api.js)
+        // 4. FAZER AS REQUISIÇÕES (autenticadas automaticamente pelo api.js)
         
-        // Pedido 1: Buscar as viagens que eu estou a conduzir
+        // Requisição 1: Buscar as viagens que eu estou dirigindo
         const drivingResponse = await api.get('/trips/driving');
         setDrivingTrips(drivingResponse.data); // Guarda no estado
 
-        // Pedido 2: Buscar os pedidos que eu fiz para viagens de outros
+        // Requisição 2: Buscar os pedidos que eu fiz para viagens de outros
         const ridingResponse = await api.get('/trips/riding');
         setRidingRequests(ridingResponse.data); // Guarda no estado
 
@@ -58,9 +58,9 @@ function TripsPage() {
 
   // 6. RENDERIZAÇÃO
   
-  // Se estiver a carregar, mostra uma mensagem
+  // Se estiver carregando, mostra uma mensagem
   if (loading) {
-    return <div style={{ padding: '20px' }}>A carregar viagens...</div>;
+    return <div style={{ padding: '20px' }}>Carregando viagens...</div>;
   }
 
   // Se deu erro, mostra o erro
@@ -71,11 +71,11 @@ function TripsPage() {
   // Se tudo correu bem, mostra os dados
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: 'auto' }}>
-      <h2>Minhas Viagens (TripsPage)</h2>
+      <h2>Minhas Viagens</h2>
 
-      {/* Secção 1: Viagens que eu conduzo */}
+      {/* Seção 1: Viagens que eu dirijo */}
       <section>
-        <h3>Viagens que estou a oferecer</h3>
+        <h3>Viagens que estou oferecendo</h3>
         {drivingTrips.length === 0 ? (
           <p>Ainda não publicou nenhuma viagem.</p>
         ) : (
@@ -94,7 +94,7 @@ function TripsPage() {
                       Passageiro: {req.user.firstName} {req.user.lastName} <br/>
                       Estado: <strong>{req.status}</strong>
                     </p>
-                    {/* TO-DO: Adicionar botões de Aprovar/Recusar aqui */}
+                    {/* TODO: Adicionar botões de Aprovar/Recusar aqui */}
                   </div>
                 ))
               ) : (
@@ -107,7 +107,7 @@ function TripsPage() {
 
       <hr style={{ margin: '30px 0' }} />
 
-      {/* Secção 2: Viagens que eu vou apanhar */}
+      {/* Seção 2: Viagens que vou pegar */}
       <section>
         <h3>Viagens que pedi</h3>
         {ridingRequests.length === 0 ? (

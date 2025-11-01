@@ -64,7 +64,7 @@ function SearchPage() {
         setDestinationSuggestions(data);
       }
     } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Erro ao buscar dados", error);
     }
   };
 
@@ -106,8 +106,8 @@ function SearchPage() {
   toast.error(data.message || "Erro ao buscar caronas");
       }
     } catch (error) {
-      console.error("Error:", error);
-  toast.error("Ocorreu um erro ao buscar caronas");
+      console.error("Erro:", error);
+      toast.error("Ocorreu um erro ao buscar caronas");
     }
   };
 
@@ -120,7 +120,7 @@ function SearchPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ shareId: rideId, message: "Requesting this ride" }),
+        body: JSON.stringify({ shareId: rideId, message: "Solicitando esta carona" }),
       });
       const data = await response.json();
 
@@ -130,7 +130,7 @@ function SearchPage() {
         toast.error(data.message || "Erro ao enviar solicitação de carona");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Erro:", error);
       toast.error("Ocorreu um erro ao enviar a solicitação de carona");
     }
   };
@@ -157,7 +157,7 @@ function SearchPage() {
         }
       }
     } catch (error) {
-      console.error("Error fetching coordinates:", error);
+      console.error("Erro ao buscar coordenadas:", error);
     }
   };
 
@@ -173,7 +173,7 @@ function SearchPage() {
             value={formData.from}
             onChange={handleChange}
             className="w-full border mb-2 p-2"
-            placeholder="Digite um local"
+            placeholder="Digite o local de origem"
           />
           {originSuggestions.length > 0 && (
             <ul className="bg-white shadow-lg max-h-60 overflow-auto w-full mt-2 rounded-lg z-20">

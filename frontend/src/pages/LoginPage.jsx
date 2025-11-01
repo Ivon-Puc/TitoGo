@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// 1. [Importante] Importamos o nosso 'api' que criámos.
-// Ajuste o caminho '../services/api' se o seu ficheiro estiver noutro local.
+// 1. [Importante] Importamos nossa 'api' que criamos.
+// Ajuste o caminho '../services/api' se seu arquivo estiver em outro local.
 import api from '../services/api'; 
 
 // (Se estiver a usar react-router-dom para navegar, importe o useHistory ou useNavigate)
@@ -10,7 +10,7 @@ import api from '../services/api';
  * Página de Login
  */
 function LoginPage() {
-  // Estados para guardar o que o utilizador digita
+  // Estados para guardar o que o usuário digita
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
@@ -21,10 +21,10 @@ function LoginPage() {
   // const navigate = useNavigate();
 
   /**
-   * Função chamada quando o formulário é submetido
+   * Função chamada quando o formulário é enviado
    */
   const handleLogin = async (e) => {
-    // 1. Previne o recarregamento (reload) da página
+    // 1. Previne o recarregamento da página
     e.preventDefault();
     setError(''); // Limpa erros anteriores
 
@@ -50,7 +50,7 @@ function LoginPage() {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       // 6. Informa o utilizador e redireciona-o
-      alert('Login bem-sucedido! O seu token está guardado.');
+      alert('Login bem-sucedido! Seu token está salvo.');
       
       // (Se usar react-router, descomente a linha abaixo para navegar)
       // navigate('/dashboard'); // ou '/procurar-viagem'
@@ -63,7 +63,7 @@ function LoginPage() {
       } else {
         setError('Ocorreu um erro. Tente novamente.');
       }
-      console.error("Falha no login:", err);
+      console.error("Erro no login:", err);
     }
   };
 
@@ -85,7 +85,7 @@ function LoginPage() {
           />
         </div>
         <div style={{ marginBottom: '10px' }}>
-          <label>Password:</label><br />
+          <label>Senha:</label><br />
           <input
             type="password"
             value={password}

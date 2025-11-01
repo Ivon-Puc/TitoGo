@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// 1. Importamos o nosso 'api' (que já sabe o URL base e como adicionar o token)
+// 1. Importamos o nosso 'api' (que já sabe a URL base e como adicionar o token)
 // O caminho '../services/api' está correto porque estamos em 'src/pages/'
 import api from '../services/api'; 
 
@@ -16,12 +16,12 @@ function ShareForm() {
   const [spots, setSpots] = useState(1); // Começa com 1 lugar por defeito
   const [message, setMessage] = useState('');
 
-  // Estados para feedback
+  // Estados para retorno ao usuário
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   /**
-   * Função chamada quando o formulário é submetido
+   * Função chamada quando o formulário é enviado
    */
   const handleShareSubmit = async (e) => {
     e.preventDefault(); // Previne o reload da página
@@ -80,10 +80,10 @@ function ShareForm() {
   // 5. O formulário JSX
   return (
     <div style={{ padding: '20px', maxWidth: '500px', margin: 'auto' }}>
-      <h2>Oferecer Boleia (ShareForm)</h2>
+      <h2>Oferecer Carona</h2>
       
       <form onSubmit={handleShareSubmit}>
-        {/* Mostra feedback de sucesso ou erro */}
+        {/* Mostra mensagens de sucesso ou erro */}
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {success && <p style={{ color: 'green' }}>{success}</p>}
 
