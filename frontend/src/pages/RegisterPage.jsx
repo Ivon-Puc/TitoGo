@@ -1,229 +1,115 @@
-import { useState } from "react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import signupImage from "../assets/signup.jpeg"
+import React, { useState } from 'react';
+// 1. [A MUDANÇA IMPORTANTE] Importamos o nosso 'api'
+import api from '../services/api';
+// import { useNavigate } from 'react-router-dom';
 
-const RegisterPage = () => {
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        repeatPassword: "",
-        driverLicenseId: "",
-        gender: ""
-    });
+/**
+ * Página de Cadastro (Registro)
+ */
+function RegisterPage() {
+  // Estados para o formulário (baseado na sua imagem)
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // Campo "a senha"
+  const [driverLicenseId, setDriverLicenseId] = useState('');
+  const [gender, setGender] = useState('MALE'); // Assumindo 'MALE' ou 'FEMALE'
+  const [senacId, setSenacId] = useState(''); // Campo obrigatório que descobrimos
+  
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  // const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
-    };
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // Validação de palavra-passe
+    if (password !== confirmPassword) {
+      setError('As palavras-passe não coincidem.');
+      return;
+    }
     
-        if (formData.password !== formData.repeatPassword) {
-            toast.error("As senhas não coincidem");
-            return;
-        }
-    
-        try {
-            const response = await fetch('http://localhost:3000/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-    
-            const data = await response.json();
-            if (response.ok) {
-                toast.success("Usuário registrado com sucesso!");
-                setFormData({
-                    firstName: "",
-                    lastName: "",
-                    email: "",
-                    password: "",
-                    repeatPassword: "",
-                    driverLicenseId: "",
-                    gender: "",
-                });
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error("Ocorreu um erro durante o registro. Por favor, tente novamente.");
-            console.error('Erro durante o registro:', error);
-        }
-    };
+    // (Adicione aqui o 'senacId' ao formulário ou envie um valor de teste)
+    // Se o Senac ID não estiver no seu formulário, temos de o adicionar.
+    // Por agora, vou enviar um valor de teste:
+    const finalSenacId = senacId || 'SENAC-ID-PADRAO'; 
 
-    const handleCancel = () => {
-        setFormData({
-            firstName: "",
-            lastName: "",
-            email: "",
-            password: "",
-            repeatPassword: "",
-            driverLicenseId: "",
-            gender: ""
-        });
-    };
+    try {
+      // 2. [A MÁGICA] Usamos o api.post. Ele JÁ SABE o endereço do Render.
+      // Não escrevemos 'localhost' em lado nenhum!
+      const response = await api.post('/register', {
+        firstName,
+        lastName,
+        email,
+        password,
+        driverLicenseId,
+        gender,
+        senacId: finalSenacId 
+      });
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-            {/* Parent container with a defined height */}
-            <div className="max-w-6xl w-full flex bg-white shadow-lg rounded-lg overflow-hidden min-h-[700px]">
-                {/* Left Column - Signup Image */}
-                <div
-                    className="w-1/2 bg-[0px_100px] h-auto" // h-full to take full height of parent
-                    style={{ backgroundImage: `url(${signupImage})` }}
-                >
-                    {/* You can add any additional content or overlay here */}
-                </div>
+      // 3. SUCESSO!
+      setSuccess('Registo bem-sucedido! Pode agora fazer login.');
+      
+      // Limpar o formulário (opcional)
+      // ...
+      
+      // Redirecionar para o login após 2 segundos (opcional)
+      // setTimeout(() => {
+      //   navigate('/login');
+      // }, 2000);
 
-                {/* Right Column - Signup Form */}
-                <div className="w-1/2 p-8 flex flex-col justify-center">
-                    <ToastContainer />
-                    <h2 className="text-3xl font-bold mb-8 text-center">Cadastrar</h2>
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="firstName">
-                                Nome
-                            </label>
-                            <input
-                                type="text"
-                                id="firstName"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
+    } catch (err) {
+      // 4. FALHA
+      if (err.response && err.response.data && err.response.data.message) {
+        // Ex: "User already exists"
+        setError(err.response.data.message);
+      } else {
+        setError('Ocorreu um erro no registo. Tente novamente.');
+      }
+      console.error("Erro no registo:", err);
+    }
+  };
 
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="lastName">
-                                Sobrenome
-                            </label>
-                            <input
-                                type="text"
-                                id="lastName"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
+  // 5. O seu formulário JSX
+  // (Adapte este código ao seu formulário JSX existente)
+  // O importante é ligar os 'onChange' e o 'onSubmit'
+  return (
+    <div style={{ padding: '20px', maxWidth: '500px', margin: 'auto' }}>
+      <h2>Cadastro</h2>
+      <form onSubmit={handleRegister}>
+        {/* Mostra feedback de sucesso ou erro */}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {success && <p style={{ color: 'green' }}>{success}</p>}
 
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="email">
-                                E-mail
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="password">
-                                Senha
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="repeatPassword">
-                                Repita a senha
-                            </label>
-                            <input
-                                type="password"
-                                id="repeatPassword"
-                                name="repeatPassword"
-                                value={formData.repeatPassword}
-                                onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3" htmlFor="driverLicenseId">
-                                Número da CNH
-                            </label>
-                            <input
-                                type="text"
-                                id="driverLicenseId"
-                                name="driverLicenseId"
-                                value={formData.driverLicenseId}
-                                onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="block text-gray-700 text-lg font-bold mb-3">Gênero</label>
-                            <div className="flex space-x-4">
-                                <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="gender"
-                                        value="masculino"
-                                        checked={formData.gender === 'masculino'}
-                                        onChange={handleChange}
-                                        className="mr-2"
-                                    />
-                                    Masculino
-                                </label>
-                                <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="gender"
-                                        value="feminino"
-                                        checked={formData.gender === 'feminino'}
-                                        onChange={handleChange}
-                                        className="mr-2"
-                                    />
-                                    Feminino
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                type="submit"
-                                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
-                            >
-                                Enviar
-                            </button>
-                            <button
-                                type="button"
-                                className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 text-lg"
-                                onClick={handleCancel}
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        {/* Nome */}
+        <input placeholder="Nome" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+        {/* Sobrenome */}
+        <input placeholder="Sobrenome" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+        {/* E-mail */}
+        <input type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        {/* Senha */}
+        <input type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        {/* a senha */}
+        <input type="password" placeholder="Confirme a senha" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+        {/* Número da CNH */}
+        <input placeholder="Número da CNH" value={driverLicenseId} onChange={(e) => setDriverLicenseId(e.target.value)} required />
+        {/* Gênero (simplificado) */}
+        <div>
+          <label><input type="radio" value="MALE" checked={gender === 'MALE'} onChange={() => setGender('MALE')} /> Masculino</label>
+          <label><input type="radio" value="FEMALE" checked={gender === 'FEMALE'} onChange={() => setGender('FEMALE')} /> Feminino</label>
         </div>
-    );
-};
+        
+        {/* *** IMPORTANTE: Campo SenacId *** */}
+        {/* O seu backend EXIGE este campo. O seu formulário precisa de o ter. */}
+        <input placeholder="ID Senac" value={senacId} onChange={(e) => setSenacId(e.target.value)} required />
+
+        <button type="submit">Cadastrar</button>
+      </form>
+    </div>
+  );
+}
 
 export default RegisterPage;
