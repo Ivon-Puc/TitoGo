@@ -75,4 +75,85 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Usamos o '
+      // 1. Usamos o 'api.post' (que já sabe a URL do Render)
+      const response = await api.post('/login', {
+        email: email,
+        password: password,
+      });
+
+      // 2. SUCESSO! Guardamos o token
+      const token = response.data.token;
+      localStorage.setItem('token', token);
+      
+      // Atualizamos o 'header' padrão do axios para pedidos futuros
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      // 3. [MELHORIA] Redirecionamos o utilizador para a página principal
+      navigate('/'); // Ou '/viagens'
+
+    } catch (err) {
+      // 4. FALHA
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Ocorreu um erro. Tente novamente.');
+      }
+      console.error("Falha no login:", err);
+    } finally {
+      // 5. Paramos o loading
+      setLoading(false);
+    }
+  };
+
+  // 6. O JSX (HTML) agora usa os estilos
+  return (
+    <div style={styles.pageContainer}>
+      <h2>Login - TitoGo</h2>
+      
+      <form onSubmit={handleLogin} style={styles.form}>
+        
+        {/* Mostra o erro, se existir */}
+        {error && <p style={styles.errorMsg}>{error}</p>}
+
+        {/* Campo de Email */}
+        <div style={styles.inputGroup}>
+          <label htmlFor="email">Email:</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="seu.email@exemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={styles.input}
+          />
+        </div>
+        
+        {/* Campo de Senha */}
+        <div style={styles.inputGroup}>
+          <label htmlFor="password">Senha:</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={styles.input}
+          />
+        </div>
+        
+        {/* Botão de Submissão */}
+        <button 
+          type="submit" 
+          disabled={loading}
+          style={{ ...styles.button, ...(loading ? styles.buttonDisabled : {}) }}
+        >
+          {loading ? 'A entrar...' : 'Entrar'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default LoginPage;
