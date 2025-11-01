@@ -75,8 +75,7 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Usamos o 'api.post' (que já sabe a URL do Render)
-      const response = await api.post('/login', {
+       const response = await api.post('/login', {
         email: email,
         password: password,
       });
