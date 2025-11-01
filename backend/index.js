@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client'; //prisma/client
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
@@ -25,10 +25,22 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Register Route
+// ==========================================================
+// ROTA DE REGISTO CORRIGIDA
+// ==========================================================
 app.post('/register', async (req, res) => {
-    // 1. ADICIONE 'senacId' AQUI
-    const { firstName, lastName, email, password, driverLicenseId, gender, senacId } = req.body; // <-- MUDANÇA AQUI
+    // 1. O 'gender' (gênero) que recebemos aqui é um STRING (ex: "masculino")
+    const { firstName, lastName, email, password, driverLicenseId, gender, senacId } = req.body;
+
+    // 2. [A CORREÇÃO] Vamos "mapear" (traduzir) o string para o Enum do Prisma
+    let genderEnum;
+    if (gender === 'masculino' || gender === 'MALE') {
+      genderEnum = 'MALE';
+    } else if (gender === 'feminino' || gender === 'FEMALE') {
+      genderEnum = 'FEMALE';
+    } else {
+      genderEnum = 'OTHER'; // O nosso valor "fallback" (de recurso)
+    }
 
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -41,9 +53,14 @@ app.post('/register', async (req, res) => {
                 lastName, 
                 email, 
                 password: hashedPassword, 
-                driverLicense: driverLicenseId, 
-                gender,
-                senacId: senacId // <-- 2. ADICIONE ESTA LINHA
+                
+                // [CORREÇÃO 2] Trata o 'driverLicense' como nulo se for vazio
+                driverLicense: driverLicenseId || null, 
+                
+                // 3. Usamos a nossa variável 'traduzida' aqui
+                gender: genderEnum, 
+                
+                senacId 
             },
         });
 
@@ -53,6 +70,10 @@ app.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+// ==========================================================
+// FIM DA ROTA DE REGISTO CORRIGIDA
+// ==========================================================
+
 
 // Login Route
 app.post('/login', async (req, res) => {
@@ -66,6 +87,7 @@ app.post('/login', async (req, res) => {
         if (!isPasswordValid) return res.status(400).json({ message: 'Invalid email or password' });
 
         const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+        
         res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
         console.error('Error:', error);
@@ -111,14 +133,14 @@ app.get('/search-rides', authenticateToken, async (req, res) => {
                 origin: { contains: from, mode: 'insensitive' },
                 destination: { contains: to, mode: 'insensitive' },
                 departureTime: {
-                    gte: new Date(date), // Match rides on or after the given date
-                    lte: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000), // Match rides on the same day
+                    gte: new Date(date), 
+                    lte: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000),
                 },
-                spots: { gt: 0 }, // Ensure there are available spots
+                spots: { gt: 0 },
             },
             include: {
                 driver: {
-                    select: { firstName: true, lastName: true }, // Include driver's name
+                    select: { firstName: true, lastName: true },
                 },
             },
         });
@@ -135,17 +157,15 @@ app.post('/request-ride', authenticateToken, async (req, res) => {
     const { shareId, message } = req.body;
 
     try {
-        // Check if spots are available
         const ride = await prisma.share.findUnique({ where: { id: shareId } });
         if (!ride || ride.spots <= 0) {
             return res.status(400).json({ message: 'No spots available for this ride' });
         }
 
-        // Create a new request
         const newRequest = await prisma.request.create({
             data: {
                 shareId,
-                userId: req.user.id, // User ID from the JWT
+                userId: req.user.id,
                 message: message || null,
             },
         });
@@ -166,7 +186,7 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
           requests: {
             include: {
               user: {
-                select: { firstName: true, lastName: true }, // Fetch only necessary fields
+                select: { firstName: true, lastName: true },
               },
             },
           },
@@ -174,7 +194,7 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
       });
   
       if (!trips.length) {
-        return res.status(200).json([]); // Return an empty array if no trips found
+        return res.status(200).json([]);
       }
   
       res.status(200).json(trips);
@@ -193,15 +213,15 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
           share: { driverId: req.user.id },
         },
         include: {
-          share: true, // Include trip details
+          share: true, 
           user: {
-            select: { firstName: true, lastName: true }, // Include rider details
+            select: { firstName: true, lastName: true },
           },
         },
       });
   
       if (!requests.length) {
-        return res.status(200).json([]); // Return empty array if no requests
+        return res.status(200).json([]);
       }
   
       res.status(200).json(requests);
@@ -224,7 +244,7 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
       });
   
       if (!ridingRequests.length) {
-        return res.status(200).json([]); // Return empty array if no riding requests
+        return res.status(200).json([]);
       }
   
       res.status(200).json(ridingRequests);
@@ -240,107 +260,91 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
   
-    // Validar o status de entrada
     if (!['PENDING', 'APPROVED', 'DECLINED'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
   
     try {
-      // Usamos uma transação para garantir a consistência dos dados
       const updatedRequest = await prisma.$transaction(async (tx) => {
   
-        // 1. Encontrar o pedido original para saber o seu estado atual e o ID da viagem
         const request = await tx.request.findUnique({
           where: { id: parseInt(id) },
           select: { status: true, shareId: true }
         });
   
         if (!request) {
-          throw new Error('Request not found'); // Lança um erro para cancelar a transação
+          throw new Error('Request not found');
         }
 
-        const currentStatus = request.status; // Ex: "PENDING"
-        const shareId = request.shareId;     // Ex: 1
+        const currentStatus = request.status;
+        const shareId = request.shareId;
 
-        // ---- LÓGICA DE APROVAÇÃO ----
         if (status === 'APPROVED') {
-            
-            // Só diminuímos lugares se o pedido estava PENDENTE
-            if (currentStatus !== 'PENDING') {
-                return tx.request.findUnique({ where: { id: parseInt(id) }}); // Já foi tratado, não faz nada
-            }
+            
+            if (currentStatus !== 'PENDING') {
+                return tx.request.findUnique({ where: { id: parseInt(id) }});
+            }
 
-            // 2. Encontrar a viagem (Share) para verificar se há lugares
-            const share = await tx.share.findUnique({
-                where: { id: shareId },
-                select: { spots: true }
-            });
+            const share = await tx.share.findUnique({
+                where: { id: shareId },
+                select: { spots: true }
+            });
 
-            // 3. Verificar se há lugares disponíveis
-            if (!share || share.spots <= 0) {
-                throw new Error('No spots available for this ride'); // Cancela a transação
-            }
+            if (!share || share.spots <= 0) {
+                throw new Error('No spots available for this ride');
+            }
 
-            // 4. Se há lugares, ATUALIZAR AMBOS:
-            
-            // 4a. Diminuir 1 lugar na viagem (Share)
-            await tx.share.update({
-                where: { id: shareId },
-                data: {
-                    spots: {
-                        decrement: 1 // Operação atómica de decremento
-                    }
-                }
-            });
+            await tx.share.update({
+                where: { id: shareId },
+                data: {
+                    spots: {
+                        decrement: 1 
+                    }
+                }
+            });
 
-            // 4b. Atualizar o status do pedido (Request)
-            return tx.request.update({
-                where: { id: parseInt(id) },
-                data: { status: 'APPROVED' },
-            });
+            return tx.request.update({
+                where: { id: parseInt(id) },
+                data: { status: 'APPROVED' },
+            });
 
-        // ---- LÓGICA DE RECUSA (BÓNUS) ----
         } else if (status === 'DECLINED' || status === 'PENDING') {
-            
-            // Bónus: Se o pedido estava "APPROVED" e agora foi recusado (ou revertido),
-            // devolvemos o lugar à viagem.
-            if (currentStatus === 'APPROVED') {
-                await tx.share.update({
-                    where: { id: shareId },
-                    data: {
-                        spots: {
-                            increment: 1 // Operação atómica de incremento
-                        }
-                    }
-                });
-            }
+            
+            if (currentStatus === 'APPROVED') {
+                await tx.share.update({
+                    where: { id: shareId },
+                    data: {
+                        spots: {
+                            increment: 1
+                        }
+                    }
+                });
+            }
 
-            // Apenas atualiza o status do pedido
-            return tx.request.update({
-                where: { id: parseInt(id) },
-                data: { status: status },
-            });
-        }
-        
-        // Se o status não for nenhum dos acima (não deve acontecer)
-        return tx.request.findUnique({ where: { id: parseInt(id) }}); 
+            return tx.request.update({
+                where: { id: parseInt(id) },
+                data: { status: status },
+            });
+        }
+        
+        return tx.request.findUnique({ where: { id: parseInt(id) }}); 
       });
   
-      // Se a transação foi bem-sucedida
       res.status(200).json({ message: 'Request status updated successfully', request: updatedRequest });
   
     } catch (error) {
       console.error('Error updating request status:', error.message);
 
-      // Enviar mensagens de erro específicas que definimos na transação
-      if (error.message === 'Request not found') {
-        return res.status(404).json({ message: 'Request not found' });
-      }
-      if (error.message === 'No spots available for this ride') {
-        return res.status(400).json({ message: 'No spots available for this ride' });
-      }
+      // ===============================================
+      // [A CORREÇÃO DO 4G4]
+      // ===============================================
+      if (error.message === 'Request not found') {
+        return res.status(404).json({ message: 'Request not found' }); // <-- CORRIGIDO
+      }
+      if (error.message === 'No spots available for this ride') {
+        return res.status(400).json({ message: 'No spots available for this ride' });
+      }
 
-      // Erro genérico
       res.status(500).json({ message: 'Internal Server Error' });
     }
   });
