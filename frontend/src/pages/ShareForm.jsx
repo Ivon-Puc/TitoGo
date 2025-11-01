@@ -1,259 +1,126 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import Maps from "../components/Maps";
+import React, { useState } from 'react';
+// 1. Importamos o nosso 'api' (que já sabe o URL base e como adicionar o token)
+// O caminho '../services/api' está correto porque estamos em 'src/pages/'
+import api from '../services/api'; 
 
-const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search?";
+/**
+ * Página para o condutor criar (partilhar) uma nova viagem.
+ * (Este é o seu ShareForm.jsx atualizado para usar o serviço 'api')
+ */
+function ShareForm() {
+  // Estados para controlar todos os campos do formulário
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
+  const [departureTime, setDepartureTime] = useState('');
+  const [spots, setSpots] = useState(1); // Começa com 1 lugar por defeito
+  const [message, setMessage] = useState('');
 
-const ShareForm = () => {
-  const [formData, setFormData] = useState({
-    from: "",
-    to: "",
-    departureDate: "",
-    departureTime: "",
-    spots: "",
-    message: "",
-  });
+  // Estados para feedback
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const [originCoordinates, setOriginCoordinates] = useState(null);
-  const [destinationCoordinates, setDestinationCoordinates] = useState(null);
-  const [searchTriggered, setSearchTriggered] = useState(false);
+  /**
+   * Função chamada quando o formulário é submetido
+   */
+  const handleShareSubmit = async (e) => {
+    e.preventDefault(); // Previne o reload da página
+    setError('');
+    setSuccess('');
 
-  const [originSuggestions, setOriginSuggestions] = useState([]);
-  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
-  const [debouncedOrigin, setDebouncedOrigin] = useState("");
-  const [debouncedDestination, setDebouncedDestination] = useState("");
-
-  // Debounce for origin
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedOrigin(formData.from);
-    }, 500);
-
-    return () => clearTimeout(handler);
-  }, [formData.from]);
-
-  // Debounce for destination
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedDestination(formData.to);
-    }, 500);
-
-    return () => clearTimeout(handler);
-  }, [formData.to]);
-
-  // Fetch suggestions
-  const fetchSuggestions = async (query, type) => {
-    if (!query) {
-      if (type === "origin") setOriginSuggestions([]);
-      if (type === "destination") setDestinationSuggestions([]);
+    // Validação simples
+    if (!from || !to || !departureDate || !departureTime || spots <= 0) {
+      setError('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
 
-    const url = new URL(NOMINATIM_BASE_URL);
-    url.searchParams.set("q", query);
-    url.searchParams.set("format", "json");
-    url.searchParams.set("addressdetails", "1");
-
     try {
-      const response = await fetch(url);
-      const data = await response.json();
+      // 2. [A MÁGICA ACONTECE AQUI]
+      // Apenas chamamos 'api.post' para a rota protegida.
+      // O 'api.js' vai automaticamente buscar o 'token' ao localStorage
+      // e colocá-lo no cabeçalho 'Authorization: Bearer ...'
+      const response = await api.post('/create-trip', {
+        from, // forma curta de: from: from
+        to,
+        departureDate,
+        departureTime,
+        spots: String(spots), // O backend espera 'spots' como string
+        message,
+      });
 
-      if (type === "origin") {
-        setOriginSuggestions(data);
-      } else if (type === "destination") {
-        setDestinationSuggestions(data);
+      // 3. SUCESSO! O backend (com o token válido) criou a viagem
+      setSuccess('Viagem criada com sucesso!');
+      
+      // Limpar o formulário (opcional)
+      setFrom('');
+      setTo('');
+      setDepartureDate('');
+      setDepartureTime('');
+      setSpots(1);
+      setMessage('');
+
+      // Aqui, você poderia navegar o utilizador para a página "Minhas Viagens"
+      // navigate('/minhas-viagens');
+
+    } catch (err) {
+      // 4. FALHA. O backend deu um erro.
+      // Se for 401 ou 403, significa que o token era inválido ou expirou.
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        setError('Não autorizado. Por favor, faça login novamente.');
+        // Aqui você deveria redirecionar para a página de login
+        // navigate('/login');
+      } else {
+        // Outros erros (ex: erro de servidor)
+        setError('Ocorreu um erro ao criar a viagem.');
       }
-    } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Falha ao criar viagem:", err);
     }
   };
 
-  // Fetch origin suggestions whenever debouncedOrigin changes
-  useEffect(() => {
-    fetchSuggestions(debouncedOrigin, "origin");
-  }, [debouncedOrigin]);
-
-  // Fetch destination suggestions whenever debouncedDestination changes
-  useEffect(() => {
-    fetchSuggestions(debouncedDestination, "destination");
-  }, [debouncedDestination]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSearchClick = () => {
-    if (formData.from && formData.to) {
-      setSearchTriggered(true);
-    } else {
-      alert("Por favor, selecione origem e destino");
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "http://localhost:3000/create-trip",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-  toast.success("Viagem compartilhada com sucesso!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      console.log("Trip created:", response.data);
-    } catch (error) {
-      console.error("Error creating trip:", error);
-  toast.error("Falha ao criar viagem. Por favor, tente novamente.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    }
-  };
-
+  // 5. O formulário JSX
   return (
-    <div className="flex justify-start p-8 space-x-4">
-      <form onSubmit={handleSubmit} className="space-y-4 bg-gray-100 p-8 rounded-lg w-96 shadow-md">
-        <div>
-          <label className="block text-gray-700">De</label>
-          <input
-            type="text"
-            name="from"
-            value={formData.from}
-            onChange={handleChange}
-            placeholder="Digite o nome de um local"
-            className="w-full p-2 mt-1 border rounded-md"
-          />
-          {originSuggestions.length > 0 && (
-            <ul className="bg-white shadow-lg max-h-60 overflow-auto w-full mt-2 rounded-lg z-20">
-              {originSuggestions.map((suggestion) => (
-                <li
-                  key={suggestion.place_id}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-200"
-                  onClick={() => {
-                    setFormData({ ...formData, from: suggestion.display_name });
-                    setOriginCoordinates([suggestion.lat, suggestion.lon]);
-                    setOriginSuggestions([]);
-                  }}
-                >
-                  {suggestion.display_name}
-                </li>
-              ))}
-            </ul>
-          )}
+    <div style={{ padding: '20px', maxWidth: '500px', margin: 'auto' }}>
+      <h2>Oferecer Boleia (ShareForm)</h2>
+      
+      <form onSubmit={handleShareSubmit}>
+        {/* Mostra feedback de sucesso ou erro */}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {success && <p style={{ color: 'green' }}>{success}</p>}
+
+        {/* Campos do formulário */}
+        <div style={{ marginBottom: '10px' }}>
+          De (Origem):*<br />
+          <input type="text" value={from} onChange={(e) => setFrom(e.target.value)} required style={{ width: '100%' }} />
         </div>
-        <div>
-          <label className="block text-gray-700">Para</label>
-          <input
-            type="text"
-            name="to"
-            value={formData.to}
-            onChange={handleChange}
-            placeholder="Digite o nome de um local"
-            className="w-full p-2 mt-1 border rounded-md"
-          />
-          {destinationSuggestions.length > 0 && (
-            <ul className="bg-white shadow-lg max-h-60 overflow-auto w-full mt-2 rounded-lg z-20">
-              {destinationSuggestions.map((suggestion) => (
-                <li
-                  key={suggestion.place_id}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-200"
-                  onClick={() => {
-                    setFormData({ ...formData, to: suggestion.display_name });
-                    setDestinationCoordinates([suggestion.lat, suggestion.lon]);
-                    setDestinationSuggestions([]);
-                  }}
-                >
-                  {suggestion.display_name}
-                </li>
-              ))}
-            </ul>
-          )}
+        <div style={{ marginBottom: '10px' }}>
+          Para (Destino):*<br />
+          <input type="text" value={to} onChange={(e) => setTo(e.target.value)} required style={{ width: '100%' }} />
         </div>
-        <div>
-          <label className="block text-gray-700">Partida</label>
-          <div className="flex space-x-2">
-            <input
-              type="date"
-              name="departureDate"
-              value={formData.departureDate}
-              onChange={handleChange}
-              className="w-1/2 p-2 border rounded-md"
-            />
-            <input
-              type="time"
-              name="departureTime"
-              value={formData.departureTime}
-              onChange={handleChange}
-              className="w-1/2 p-2 border rounded-md"
-            />
+        <div style={{ marginBottom: '10px', display: 'flex', gap: '10px' }}>
+          <div style={{ flex: 1 }}>
+            Data:*<br />
+            <input type="date" value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} required style={{ width: '100%' }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            Hora:*<br />
+            <input type="time" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} required style={{ width: '100%' }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            Lugares:*<br />
+            <input type="number" min="1" value={spots} onChange={(e) => setSpots(Number(e.target.value))} required style={{ width: '100%' }} />
           </div>
         </div>
-        <div>
-          <label className="block text-gray-700">Vagas no seu carro</label>
-          <input
-            type="number"
-            name="spots"
-            value={formData.spots}
-            onChange={handleChange}
-            placeholder="Número de vagas"
-            className="w-full p-2 mt-1 border rounded-md"
-          />
+        <div style={{ marginBottom: '10px' }}>
+          Mensagem (opcional):<br />
+          <textarea value={message} onChange={(e) => setMessage(e.target.value)} style={{ width: '100%' }} rows="3"></textarea>
         </div>
-        <div>
-          <label className="block text-gray-700">Mensagem</label>
-          <textarea
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            placeholder="Mensagem..."
-            className="w-full p-2 mt-1 border rounded-md"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={handleSearchClick}
-          className="w-full px-5 py-3 text-lg font-semibold text-white bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95"
-          >
-          Buscar
-        </button>
-        <button
-          type="submit"
-          className="w-full px-5 py-3 text-lg font-semibold text-white bg-black rounded-lg shadow-lg hover:bg-gray-900 focus:ring-2 focus:ring-gray-500 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95"
-        >
-          Compartilhar
+        
+        <button type="submit" style={{ padding: '10px 15px' }}>
+          Publicar Viagem
         </button>
       </form>
-
-      <div className="flex-1 h-[86vh]">
-        <Maps
-          originCoordinates={originCoordinates}
-          destinationCoordinates={destinationCoordinates}
-          searchTriggered={searchTriggered}
-        />
-      </div>
-
-      <ToastContainer />
     </div>
   );
-};
+}
 
 export default ShareForm;

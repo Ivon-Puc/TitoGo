@@ -1,160 +1,129 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+// 1. Importamos o nosso 'api' (para fazer pedidos autenticados)
+import api from '../services/api';
+// (Opcional: para navegar se houver erro)
+// import { useNavigate } from 'react-router-dom'; 
 
-const TripsPage = () => {
-  const [drivingTrips, setDrivingTrips] = useState([]);
-  const [ridingTrips, setRidingTrips] = useState([]);
-  const [loadingDriving, setLoadingDriving] = useState(true);
-  const [loadingRiding, setLoadingRiding] = useState(true);
+/**
+ * Página para o utilizador ver as suas viagens.
+ * Mostra as viagens que está a conduzir E os pedidos que fez.
+ */
+function TripsPage() {
+  // 2. Estados para guardar os dados vindos do backend
+  const [drivingTrips, setDrivingTrips] = useState([]); // Viagens que eu conduzo
+  const [ridingRequests, setRidingRequests] = useState([]); // Viagens que eu pedi
+  
+  // Estados para controlo do ecrã
+  const [loading, setLoading] = useState(true); // Começa a carregar
+  const [error, setError] = useState('');
 
-  // Fetch Driving trips
-  const fetchDrivingTrips = async () => {
-    setLoadingDriving(true);
-    try {
-      const response = await fetch('http://localhost:3000/trips/driving', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await response.json();
-      setDrivingTrips(data);
-    } catch (error) {
-      console.error('Error fetching driving trips:', error);
-    } finally {
-      setLoadingDriving(false);
-    }
-  };
+  // const navigate = useNavigate();
 
-  // Fetch Riding trips
-  const fetchRidingTrips = async () => {
-    setLoadingRiding(true);
-    try {
-      const response = await fetch('http://localhost:3000/trips/riding', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await response.json();
-      setRidingTrips(data);
-    } catch (error) {
-      console.error('Error fetching riding trips:', error);
-    } finally {
-      setLoadingRiding(false);
-    }
-  };
-
-  // Handle request status change
-  const handleRequestStatusChange = async (requestId, status) => {
-    try {
-      await fetch(`http://localhost:3000/requests/${requestId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
-      });
-      // Re-fetch trips to update the UI
-      await fetchDrivingTrips();
-    } catch (error) {
-      console.error('Error updating request status:', error);
-    }
-  };
-
+  // 3. [CRUCIAL] useEffect para ir buscar os dados
+  // Isto corre UMA VEZ, assim que o componente é montado no ecrã.
   useEffect(() => {
-    fetchDrivingTrips();
-    fetchRidingTrips();
-  }, []);
+    // Função 'async' para podermos usar 'await'
+    const fetchTrips = async () => {
+      try {
+        setLoading(true);
+        setError('');
 
+        // 4. FAZER OS PEDIDOS (autenticados automaticamente pelo api.js)
+        
+        // Pedido 1: Buscar as viagens que eu estou a conduzir
+        const drivingResponse = await api.get('/trips/driving');
+        setDrivingTrips(drivingResponse.data); // Guarda no estado
+
+        // Pedido 2: Buscar os pedidos que eu fiz para viagens de outros
+        const ridingResponse = await api.get('/trips/riding');
+        setRidingRequests(ridingResponse.data); // Guarda no estado
+
+      } catch (err) {
+        // Se o token for inválido/expirado, o backend dá 401 ou 403
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          setError('Sessão expirada. Por favor, faça login novamente.');
+          // navigate('/login'); // Redireciona para o login
+        } else {
+          setError('Não foi possível carregar as viagens.');
+        }
+        console.error("Erro a buscar viagens:", err);
+      } finally {
+        // 5. Independentemente de sucesso ou erro, paramos o 'loading'
+        setLoading(false);
+      }
+    };
+
+    fetchTrips(); // Chama a função que acabámos de definir
+  }, []); // O array vazio [] significa "correr isto apenas uma vez"
+
+  // 6. RENDERIZAÇÃO
+  
+  // Se estiver a carregar, mostra uma mensagem
+  if (loading) {
+    return <div style={{ padding: '20px' }}>A carregar viagens...</div>;
+  }
+
+  // Se deu erro, mostra o erro
+  if (error) {
+    return <div style={{ padding: '20px', color: 'red' }}>{error}</div>;
+  }
+
+  // Se tudo correu bem, mostra os dados
   return (
-    <div className="p-6 font-sans">
-      {/* Driving Section */}
-      <div className="mb-8">
-        <h2 className="font-bold text-xl mb-4">Como motorista</h2>
-        <table className="w-full table-auto border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-300 px-4 py-2">Origem</th>
-              <th className="border border-gray-300 px-4 py-2">Destino</th>
-              <th className="border border-gray-300 px-4 py-2">Nome do passageiro</th>
-              <th className="border border-gray-300 px-4 py-2">Ação</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loadingDriving ? (
-              <tr>
-                <td colSpan="4" className="text-center p-4">Carregando...</td>
-              </tr>
-            ) : (
-              drivingTrips.map((trip) =>
-                trip.requests.map((request) => (
-                  <tr key={request.id}>
-                    <td className="border border-gray-300 px-4 py-2">{trip.origin}</td>
-                    <td className="border border-gray-300 px-4 py-2">{trip.destination}</td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {request.user.firstName} {request.user.lastName}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <button
-                        className="bg-red-500 text-black font-bold px-4 py-2 rounded mr-2"
-                        onClick={() => handleRequestStatusChange(request.id, 'DECLINED')}
-                      >
-                        Recusar
-                      </button>
-                      <button
-                        className="bg-yellow-500 text-black font-bold px-4 py-2 rounded mr-2"
-                        onClick={() => handleRequestStatusChange(request.id, 'PENDING')}
-                      >
-                        Ignorar
-                      </button>
-                      <button
-                        className="bg-green-500 text-black font-bold px-4 py-2 rounded"
-                        onClick={() => handleRequestStatusChange(request.id, 'APPROVED')}
-                      >
-                        Aceitar
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: 'auto' }}>
+      <h2>Minhas Viagens (TripsPage)</h2>
 
-      {/* Riding Section */}
-      <div>
-        <h2 className="font-bold text-xl mb-4">Como passageiro</h2>
-        <table className="w-full table-auto border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-300 px-4 py-2">Origem</th>
-              <th className="border border-gray-300 px-4 py-2">Destino</th>
-              <th className="border border-gray-300 px-4 py-2">Horário de partida</th>
-              <th className="border border-gray-300 px-4 py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loadingRiding ? (
-              <tr>
-                <td colSpan="4" className="text-center p-4">Carregando...</td>
-              </tr>
-            ) : (
-              ridingTrips.map((request) => (
-                <tr key={request.id}>
-                  <td className="border border-gray-300 px-4 py-2">{request.share.origin}</td>
-                  <td className="border border-gray-300 px-4 py-2">{request.share.destination}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    {new Date(request.share.departureTime).toLocaleString()}
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">{request.status}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Secção 1: Viagens que eu conduzo */}
+      <section>
+        <h3>Viagens que estou a oferecer</h3>
+        {drivingTrips.length === 0 ? (
+          <p>Ainda não publicou nenhuma viagem.</p>
+        ) : (
+          drivingTrips.map((trip) => (
+            <div key={trip.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
+              <h4>De: {trip.origin} <br/> Para: {trip.destination}</h4>
+              <p>Data: {new Date(trip.departureTime).toLocaleString()}</p>
+              <p>Lugares restantes: {trip.spots}</p>
+              
+              {/* Mostrar pedidos para esta viagem */}
+              <h5>Pedidos recebidos ({trip.requests.length}):</h5>
+              {trip.requests.length > 0 ? (
+                trip.requests.map((req) => (
+                  <div key={req.id} style={{ paddingLeft: '20px', fontSize: '0.9em' }}>
+                    <p>
+                      Passageiro: {req.user.firstName} {req.user.lastName} <br/>
+                      Estado: <strong>{req.status}</strong>
+                    </p>
+                    {/* TO-DO: Adicionar botões de Aprovar/Recusar aqui */}
+                  </div>
+                ))
+              ) : (
+                <p style={{ paddingLeft: '20px', fontSize: '0.9em' }}>Nenhum pedido ainda.</p>
+              )}
+            </div>
+          ))
+        )}
+      </section>
+
+      <hr style={{ margin: '30px 0' }} />
+
+      {/* Secção 2: Viagens que eu vou apanhar */}
+      <section>
+        <h3>Viagens que pedi</h3>
+        {ridingRequests.length === 0 ? (
+          <p>Ainda não pediu nenhuma viagem.</p>
+        ) : (
+          ridingRequests.map((request) => (
+            <div key={request.id} style={{ border: '1px solid #ddd', padding: '10px', marginBottom: '10px' }}>
+              <h4>De: {request.share.origin} <br/> Para: {request.share.destination}</h4>
+              <p>Data: {new Date(request.share.departureTime).toLocaleString()}</p>
+              <p>Meu estado: <strong>{request.status}</strong></p>
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
-};
+}
 
 export default TripsPage;

@@ -1,3 +1,5 @@
-﻿
-# Ignore env files
-/backend/.env
+﻿# Ignora as dependências do frontend
+/node_modules
+
+# Ignora o ficheiro .env do frontend (se existir)
+/.env
