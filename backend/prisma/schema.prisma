@@ -10,64 +10,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===============================================
-// NOVOS ENUMS PARA MELHORAR A INTEGRIDADE DOS DADOS
-// ===============================================
-
-// [ADICIONADO] O nosso novo sistema de Cargos
+// === ENUMS ===
 enum Role {
   USER
   ADMIN
 }
-
-// [MELHORIA] Um enum para Gênero (em vez de String)
 enum Gender {
   MALE
   FEMALE
-  OTHER // Boa prática adicionar
+  OTHER
 }
-
-// [MELHORIA] Um enum para o Status de Verificação (em vez de String)
 enum StatusVerificacao {
   PENDENTE
   APROVADO
   REPROVADO
 }
-
-// O seu enum de Status de Pedido (já estava correto)
 enum RequestStatus {
   PENDING
   APPROVED
   DECLINED
 }
 
-
-// ===============================================
-// NOSSOS MODELOS (TABELAS)
-// ===============================================
-
+// === MODELOS ===
 model User {
-  id            Int       @id @default(autoincrement())
-  firstName     String
-  lastName      String
-  email         String    @unique
-  password      String
-  
-  // [MELHORIA] Mudei para 'String?' (opcional). 
-  // Um "usuário" não precisa ter uma CNH para se registar, apenas para dirigir.
-  driverLicense String?
-  
-  // [MELHORIA] Agora usa o 'enum Gender'
-  gender        Gender
-  
-  senacId       String    @unique
-  
-  // [MELHORIA] Agora usa o 'enum StatusVerificacao'
-  statusVerificacao StatusVerificacao @default(PENDENTE)
-
-  // [ADICIONADO] O novo campo de Cargo. 
-  // Por defeito, todos os novos usuários são 'USER'.
-  role          Role      @default(USER)
+  id                Int       @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String    @unique
+  password          String
+  driverLicense     String? // Opcional
+  gender            Gender    // Usa o enum
+  senacId           String    @unique
+  statusVerificacao StatusVerificacao @default(PENDENTE) // Usa o enum
+  role              Role      @default(USER) // O nosso novo campo de Cargo
 
   // Relações
   shares        Share[]
