@@ -92,8 +92,7 @@ const ProfilePage = () => {
                         ? 'text-green-600' 
                         : profile.statusVerificacao === 'REPROVADO' 
                         ? 'text-red-600' 
-                        ? 'text-yellow-600' // Adicionei um fallback aqui
-                        : 'text-yellow-600';
+                        : 'text-yellow-600'; // Se for PENDENTE ou qualquer outro, usa amarelo
     
     const roleColor = profile.role === 'ADMIN' ? 'text-indigo-600' : 'text-gray-500';
 
