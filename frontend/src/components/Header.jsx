@@ -1,79 +1,71 @@
-import { Link, useNavigate } from "react-router-dom";
-// 1. [REMOVIDO] Não precisamos mais de useState ou useEffect
-// import { useState, useEffect } from "react";
-
-// 2. [ADICIONADO] Importamos o nosso hook 'useAuth'
+// 1. Importamos o 'NavLink' e mantemos o 'Link' (para o logo e botões)
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
-  // 3. [REMOVIDO] O estado local já não é necessário
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
   const navigate = useNavigate();
-
-  // 4. [ADICIONADO] Pegamos o estado REAL do nosso AuthContext
-  // O 'isLoggedIn' e o 'user' virão automaticamente do contexto!
   const { isLoggedIn, user, logout } = useAuth();
 
-  // 5. [REMOVIDO] O useEffect já não é necessário.
-  // O AuthProvider (que está no main.jsx) já faz esta lógica por nós.
-  /*
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, []);
-  */
-
-  // 6. [ATUALIZADO] O handleLogout agora usa a função 'logout' do contexto
   const handleLogout = () => {
-    // localStorage.removeItem('token'); // O 'logout()' já faz isto
-    // setIsLoggedIn(false); // O 'logout()' já faz isto
-    logout(); 
-    navigate('/login'); // Redireciona para o login (isto estava bom!)
+    logout();
+    navigate('/login'); 
   };
+  
+  // 2. [NOVO] Definimos as nossas classes do Tailwind aqui para ficar mais limpo
+  const baseLinkClass = "font-semibold text-xl transition-all duration-300";
+  
+  // As classes que você pediu para o link ATIVO (bold e underline)
+  const activeLinkClass = "font-bold underline"; 
+  
+  // A classe para o link INATIVO (o que tínhamos antes)
+  const inactiveLinkClass = "hover:underline";
 
-  // 7. [O JSX] O seu JSX (HTML) já está quase perfeito!
-  // A lógica 'isLoggedIn ? (...)' vai funcionar automaticamente.
-  // A única coisa que vou adicionar é uma saudação "Olá, [email]".
   return (
     <header className="flex justify-between items-center text-white py-6 px-8 md:px-32 bg-black drop-shadow-lg">
       <div className="flex items-center space-x-8">
-        <a
-          href="/"
+        {/* Usamos <Link> normal para o logo */}
+        <Link
+          to="/"
           className="text-4xl font-bold hover:scale-105 transition-all duration-300"
         >
           TitoGo
-        </a>
+        </Link>
         {isLoggedIn && (
           <>
-            <Link
+            {/* 3. [MUDANÇA] Trocamos <Link> por <NavLink> */}
+            <NavLink
               to="/search"
-              className="font-semibold text-xl hover:underline transition-all duration-300"
+              // 4. [A MÁGICA] Usamos uma função na className
+              className={({ isActive }) => 
+                `${baseLinkClass} ${isActive ? activeLinkClass : inactiveLinkClass}`
+              }
             >
               Buscar
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/share"
-              className="font-semibold text-xl hover:underline transition-all duration-300"
+              className={({ isActive }) => 
+                `${baseLinkClass} ${isActive ? activeLinkClass : inactiveLinkClass}`
+              }
             >
               Compartilhar
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/trips"
-              className="font-semibold text-xl hover:underline transition-all duration-300"
+              className={({ isActive }) => 
+                `${baseLinkClass} ${isActive ? activeLinkClass : inactiveLinkClass}`
+              }
             >
               Viagens
-            </Link>
+            </NavLink>
           </>
         )}
       </div>
       <div className="flex items-center space-x-4">
         {isLoggedIn ? (
-          // --- Se estiver LOGADO ---
+          // ... (o resto do seu código de "Logado" fica igual) ...
           <>
-            {/* [BÓNUS] Mostrar quem está logado (escondido em ecrãs pequenos) */}
             <span className="text-white hidden md:block">
-              {/* O 'user' vem do useAuth(). O '?' previne erros se 'user' for nulo. */}
               Olá, {user?.email} 
             </span>
             <button
@@ -84,7 +76,7 @@ const Header = () => {
             </button>
           </>
         ) : (
-          // --- Se estiver DESLOGADO (O seu código original) ---
+          // ... (o seu código de "Deslogado" fica igual) ...
           <>
             <Link
               to="/login"
