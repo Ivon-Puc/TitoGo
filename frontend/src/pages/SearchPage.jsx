@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Maps from "../components/Maps";
-
-// 1. [MUDANÇA] Importamos o nosso serviço 'api'
 import api from "../services/api"; 
 
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search?";
 
 function SearchPage() {
+  // ... (Estados 'formData', 'searchResults', 'coordinates', etc. permanecem iguais) ...
   const [formData, setFormData] = useState({
     from: "",
     to: "",
@@ -20,22 +19,20 @@ function SearchPage() {
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
   const [searchTriggered, setSearchTriggered] = useState(false);
 
-  // Autosuggestion states
   const [originSuggestions, setOriginSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [debouncedOrigin, setDebouncedOrigin] = useState("");
   const [debouncedDestination, setDebouncedDestination] = useState("");
 
-  // --- [NOVO] Estilos CSS-in-JS (Padrão das nossas páginas) ---
+  // --- Os Estilos (styles) permanecem exatamente os mesmos ---
   const styles = {
-    // O 'card' para o formulário
     formContainer: {
       padding: '20px',
-      margin: '0 auto', // Centraliza na coluna
+      margin: '0 auto',
       border: '1px solid #ddd',
       borderRadius: '8px',
       boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-      backgroundColor: '#ffffff' // Fundo branco
+      backgroundColor: '#ffffff'
     },
     form: {
       display: 'flex',
@@ -46,7 +43,7 @@ function SearchPage() {
       display: 'flex',
       flexDirection: 'column',
       gap: '5px',
-      position: 'relative' // Para a lista de sugestões
+      position: 'relative'
     },
     input: {
       width: '100%',
@@ -66,17 +63,16 @@ function SearchPage() {
       fontWeight: 'bold'
     },
     title: {
-      fontSize: '1.5rem', // 24px
+      fontSize: '1.5rem',
       fontWeight: 'bold',
-      marginBottom: '1rem' // 16px
-    },
-    subtitle: {
-      fontSize: '1.25rem', // 20px
-      fontWeight: 'bold',
-      marginTop: '1.5rem', // 24px
       marginBottom: '1rem'
     },
-    // Estilos para a lista de resultados
+    subtitle: {
+      fontSize: '1.25rem',
+      fontWeight: 'bold',
+      marginTop: '1.5rem',
+      marginBottom: '1rem'
+    },
     resultsContainer: {
       marginTop: '1.5rem'
     },
@@ -89,13 +85,12 @@ function SearchPage() {
     resultButton: {
       marginTop: '10px',
       padding: '8px 12px',
-      backgroundColor: '#28a745', // Verde
+      backgroundColor: '#28a745',
       color: 'white',
       border: 'none',
       borderRadius: '4px',
       cursor: 'pointer'
     },
-    // Estilos para as sugestões (autocomplete)
     suggestionList: {
       position: 'absolute',
       top: '100%',
@@ -110,10 +105,39 @@ function SearchPage() {
     },
     suggestionItem: {
       padding: '10px',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      fontSize: '0.9rem' // [BÓNUS] Fonte ligeiramente menor para caber
     }
   };
   // --- Fim dos Estilos ---
+
+  // 1. [NOVO] Função "ajudante" para formatar o endereço
+  const formatSuggestion = (address) => {
+    if (!address) return "Localização inválida";
+
+    // Cria uma lista de partes do endereço que queremos
+    const parts = [
+      address.road,         // Rua (ex: Av. Giovanni Gronchi)
+      address.suburb,       // Bairro (ex: Vila Andrade)
+      address.city,         // Cidade (ex: São Paulo)
+      address.postcode,     // CEP
+      address.country       // País (como último recurso)
+    ];
+
+    // Filtra (remove) as partes que são nulas (undefined)
+    // e junta (join) o resto com uma vírgula.
+    // O 'new Set()' remove duplicados (ex: se "city" e "suburb" forem iguais)
+    const uniqueParts = [...new Set(parts.filter(part => part))];
+    
+    // Se tivermos rua e bairro, já é suficiente
+    if(address.road && address.suburb) {
+      return `${address.road}, ${address.suburb}, ${address.city || ''}`;
+    }
+    
+    // Senão, devolve os primeiros 3 itens que encontrar (ex: Bairro, Cidade, CEP)
+    return uniqueParts.slice(0, 3).join(', ');
+  };
+
 
   // ... (Toda a lógica de 'debounce' e 'fetchSuggestions' permanece igual) ...
   // Debounce for origin
@@ -145,7 +169,7 @@ function SearchPage() {
     const url = new URL(NOMINATIM_BASE_URL);
     url.searchParams.set("q", query);
     url.searchParams.set("format", "json");
-    url.searchParams.set("addressdetails", "1");
+    url.searchParams.set("addressdetails", "1"); // <-- A chave está aqui
 
     try {
       const response = await fetch(url);
@@ -172,6 +196,7 @@ function SearchPage() {
   }, [debouncedDestination]);
 
 
+  // ... (A lógica de 'handleChange', 'handleSearch' e 'handleRequestRide' permanece igual) ...
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -184,15 +209,11 @@ function SearchPage() {
     }
 
     try {
-      // 2. [MUDANÇA CRÍTICA] Trocado 'fetch' por 'api.get'
-      // O 'api.js' já sabe a URL do Render e já adiciona o token!
       const response = await api.get(
         `/search-rides?from=${formData.from}&to=${formData.to}&date=${formData.date}`
       );
       
-      const data = response.data; // No axios, os dados vêm em 'response.data'
-
-      // No axios, 'response.ok' não existe, verificamos pelo 'status' (mas o axios falha em erros)
+      const data = response.data;
       setSearchResults(data);
       setSearchTriggered(true);
       if (data.length === 0) {
@@ -201,7 +222,6 @@ function SearchPage() {
 
     } catch (error) {
       console.error("Erro:", error);
-      // O axios coloca o erro em 'error.response'
       const errorMsg = error.response?.data?.message || "Ocorreu um erro ao buscar caronas";
       toast.error(errorMsg);
     }
@@ -209,14 +229,12 @@ function SearchPage() {
 
   const handleRequestRide = async (rideId) => {
     try {
-      // 3. [MUDANÇA CRÍTICA] Trocado 'fetch' por 'api.post'
-      // O 'api.js' trata do 'Content-Type' e do 'Authorization'
       const response = await api.post("/request-ride", {
         shareId: rideId,
         message: "Solicitando esta carona",
       });
 
-      const data = response.data; // Dados vêm em 'response.data'
+      const data = response.data;
       toast.success(data.message || "Solicitação de carona enviada com sucesso");
 
     } catch (error) {
@@ -226,10 +244,9 @@ function SearchPage() {
     }
   };
 
-  // ... (A lógica de 'handleSuggestionClick' permanece igual) ...
   const handleSuggestionClick = async (suggestion, type) => {
     const url = new URL(NOMINATIM_BASE_URL);
-    url.searchParams.set("q", suggestion.display_name);
+    url.searchParams.set("q", suggestion.display_name); // Mantemos o display_name para precisão
     url.searchParams.set("format", "json");
     url.searchParams.set("limit", "1");
 
@@ -239,6 +256,8 @@ function SearchPage() {
       if (data.length > 0) {
         const { lat, lon } = data[0];
         if (type === "origin") {
+          // [IMPORTANTE] Guardamos o 'display_name' completo no formulário
+          // mas mostramos o nome curto na lista
           setFormData({ ...formData, from: suggestion.display_name });
           setOriginCoordinates([parseFloat(lat), parseFloat(lon)]);
           setOriginSuggestions([]);
@@ -254,20 +273,16 @@ function SearchPage() {
   };
 
 
-  // 4. [MUDANÇA NO LAYOUT] Aplicamos estilos e classes responsivas
+  // 5. [MUDANÇA NO LAYOUT] Aplicamos estilos e classes responsivas
   return (
-    // O 'flex-col' empilha em mobile, 'md:flex-row' vira linha em desktop
     <div className="flex flex-col md:flex-row p-4 gap-4"> 
       <ToastContainer />
 
       {/* Coluna da Esquerda (Formulário) */}
-      {/* Ocupa 100% em mobile (w-full), 1/3 em desktop (md:w-1/3) */}
       <div className="w-full md:w-1/3 lg:w-1/4">
-        {/* O 'card' que pediste */}
         <div style={styles.formContainer}>
           <h2 style={styles.title}>Pesquisar caronas</h2>
           
-          {/* Formulário agora usa os estilos */}
           <div style={styles.form}>
             <div style={styles.inputGroup}>
               <label htmlFor="from">De</label>
@@ -283,13 +298,14 @@ function SearchPage() {
               {originSuggestions.length > 0 && (
                 <ul style={styles.suggestionList}>
                   {originSuggestions.map((suggestion) => (
+                    // 2. [MUDANÇA] Usamos o formatSuggestion aqui
                     <li
                       key={suggestion.place_id}
                       style={styles.suggestionItem}
                       className="hover:bg-gray-100"
                       onClick={() => handleSuggestionClick(suggestion, "origin")}
                     >
-                      {suggestion.display_name}
+                      {formatSuggestion(suggestion.address)}
                     </li>
                   ))}
                 </ul>
@@ -310,13 +326,14 @@ function SearchPage() {
               {destinationSuggestions.length > 0 && (
                  <ul style={styles.suggestionList}>
                   {destinationSuggestions.map((suggestion) => (
+                    // 3. [MUDANÇA] E usamos o formatSuggestion aqui
                     <li
                       key={suggestion.place_id}
                       style={styles.suggestionItem}
                       className="hover:bg-gray-100"
                       onClick={() => handleSuggestionClick(suggestion, "destination")}
                     >
-                      {suggestion.display_name}
+                      {formatSuggestion(suggestion.address)}
                     </li>
                   ))}
                 </ul>
@@ -327,7 +344,7 @@ function SearchPage() {
               <label htmlFor="date">Data</label>
               <input
                 id="date"
-                type="date" // Mudei para 'date' (data), o seu 'handleSearch' usa 'date'
+                type="date"
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
@@ -338,7 +355,7 @@ function SearchPage() {
           
           <button
             onClick={handleSearch}
-            style={{ ...styles.button, width: '100%', marginTop: '15px' }} // Botão com largura total
+            style={{ ...styles.button, width: '100%', marginTop: '15px' }}
           >
             Buscar
           </button>
@@ -364,7 +381,6 @@ function SearchPage() {
                 </div>
               ))
             ) : (
-              // Mostra esta mensagem APENAS se a busca foi feita (searchTriggered)
               searchTriggered && <p>Nenhuma carona encontrada</p>
             )}
           </div>
@@ -372,7 +388,6 @@ function SearchPage() {
       </div>
 
       {/* Coluna da Direita (Mapa) */}
-      {/* h-[60vh] (60% da altura da tela) em mobile, h-auto em desktop */}
       <div className="w-full md:flex-1 h-[60vh] md:h-auto rounded-lg overflow-hidden shadow-lg">
         <Maps
           originCoordinates={originCoordinates}
