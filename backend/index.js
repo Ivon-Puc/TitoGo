@@ -447,5 +447,53 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
 // ==========================================================
 // FIM DA ROTA DE PERFIL
 // ==========================================================
+// ==========================================================
+// ROTA DE PERFIL: Atualizar dados do utilizador logado (PUT)
+// ==========================================================
+app.put('/api/profile', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    // Campos que podem ser atualizados (NOTA: email, senacId e role NÃO podem ser atualizados aqui)
+    const { firstName, lastName, driverLicense, gender } = req.body;
+    
+    // 1. Tradução e Validação do Gênero (Igual ao /register)
+    let genderEnum;
+    if (gender === 'masculino' || gender === 'MALE') {
+        genderEnum = 'MALE';
+    } else if (gender === 'feminino' || gender === 'FEMALE') {
+        genderEnum = 'FEMALE';
+    } else {
+        genderEnum = 'OTHER'; // O nosso valor "fallback"
+    }
+
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                firstName,
+                lastName,
+                driverLicense: driverLicense || null, // Trata string vazia como nulo
+                gender: genderEnum,
+            },
+            // Selecionamos o que queremos devolver para o frontend
+            select: { id: true, firstName: true, email: true, gender: true },
+        });
+
+        res.status(200).json({ 
+            message: 'Perfil atualizado com sucesso!',
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        // O erro P2025 é do Prisma para "Record not found" (neste caso, o utilizador)
+        if (error.code === 'P2025') {
+            return res.status(404).json({ message: 'Perfil do usuário não encontrado.' });
+        }
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+// ==========================================================
+// FIM DA ROTA DE PERFIL (PUT)
+// ==========================================================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
