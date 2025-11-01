@@ -1,109 +1,78 @@
 import React, { useState } from 'react';
-// 1. [Importante] Importamos nossa 'api' que criamos.
-// Ajuste o caminho '../services/api' se seu arquivo estiver em outro local.
 import api from '../services/api'; 
-
-// (Se estiver a usar react-router-dom para navegar, importe o useHistory ou useNavigate)
-// import { useNavigate } from 'react-router-dom';
+// [IMPORTANTE] Precisamos disto para redirecionar o utilizador após o login
+import { useNavigate } from 'react-router-dom'; 
 
 /**
- * Página de Login
+ * Página de Login - Versão com Layout Melhorado
  */
 function LoginPage() {
-  // Estados para guardar o que o usuário digita
+  // Estados para o formulário
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // Estado para mostrar mensagens de erro do backend
+  // Estados de feedback
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // (Se usar react-router, ative isto)
-  // const navigate = useNavigate();
+  // Hook do React Router para navegar
+  const navigate = useNavigate();
 
-  /**
-   * Função chamada quando o formulário é enviado
-   */
-  const handleLogin = async (e) => {
-    // 1. Previne o recarregamento da página
-    e.preventDefault();
-    setError(''); // Limpa erros anteriores
-
-    try {
-      // 2. [A MÁGICA ACONTECE AQUI]
-      // Usamos o 'api.post' para enviar os dados para http://localhost:5000/login
-      const response = await api.post('/login', {
-        email: email,       // Vem do nosso estado 'email'
-        password: password  // Vem do nosso estado 'password'
-      });
-
-      // 3. SUCESSO! O backend respondeu com 200 OK.
-      // O 'response.data' contém o JSON que o backend enviou: { message: '...', token: '...' }
-      const token = response.data.token;
-
-      // 4. [CRUCIAL] Guardamos o token no localStorage do navegador.
-      // É daqui que o nosso 'intercetor' (em api.js) o vai ler da próxima vez!
-      localStorage.setItem('token', token);
-
-      // 5. [BÓNUS] Atualizamos o 'header' padrão do axios para pedidos futuros NA SESSÃO ATUAL.
-      // Isto garante que o *próximo* pedido que fizermos (daqui a 1 segundo) já terá o token,
-      // mesmo antes de o intercetor correr (é uma segurança extra).
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      // 6. Informa o utilizador e redireciona-o
-      alert('Login bem-sucedido! Seu token está salvo.');
-      
-      // (Se usar react-router, descomente a linha abaixo para navegar)
-      // navigate('/dashboard'); // ou '/procurar-viagem'
-
-    } catch (err) {
-      // 7. FALHA. O backend enviou um erro (400, 401, 500).
-      // err.response.data contém a mensagem de erro do backend (ex: "Invalid email or password")
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Ocorreu um erro. Tente novamente.');
-      }
-      console.error("Erro no login:", err);
+  // --- Estilos CSS-in-JS (Consistentes com a RegisterPage) ---
+  const styles = {
+    pageContainer: {
+      padding: '20px',
+      maxWidth: '400px', // Mais estreito para login
+      margin: '40px auto',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+    },
+    form: {
+      display: 'flex',
+      flexDirection: 'column', // Campos uns em cima dos outros
+      gap: '15px' // Espaço entre cada campo
+    },
+    inputGroup: {
+      display: 'flex',
+      flexDirection: 'column', // Label em cima do input
+      gap: '5px'
+    },
+    input: {
+      width: '100%',
+      padding: '10px',
+      boxSizing: 'border-box', // Garante que o padding não quebra o layout
+      borderRadius: '4px',
+      border: '1px solid #ccc'
+    },
+    button: {
+      padding: '12px 15px',
+      backgroundColor: '#007bff',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontSize: '16px',
+      fontWeight: 'bold'
+    },
+    buttonDisabled: {
+      backgroundColor: '#ccc',
+      cursor: 'not-allowed'
+    },
+    errorMsg: {
+      color: 'red',
+      fontWeight: 'bold'
     }
   };
+  // --- Fim dos Estilos ---
 
-  // 8. O formulário JSX
-  return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: 'auto' }}>
-      <h2>Login - TitoGo</h2>
-      
-      {/* O 'onSubmit' chama a nossa função handleLogin */}
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Email:</label><br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Senha:</label><br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        
-        {/* Mostra a mensagem de erro, se existir */}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+  /**
+   * Função chamada quando o formulário de login é submetido
+   */
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-        <button type="submit" style={{ padding: '10px 15px' }}>
-          Entrar
-        </button>
-      </form>
-    </div>
-  );
-}
-
-export default LoginPage;
+    try {
+      // 1. Usamos o '
