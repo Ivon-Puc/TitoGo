@@ -1,5 +1,4 @@
-// 1. REMOVA 'React' e 'useEffect' dos imports
-import { createContext, useState, useContext } from 'react'; 
+import React, { createContext, useState, useContext } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import api from '../services/api'; 
 
