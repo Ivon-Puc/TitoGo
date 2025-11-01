@@ -25,30 +25,31 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// [ADICIONADO] Middleware para verificar o cargo de Admin
+const isAdmin = (req, res, next) => {
+    // A propriedade 'role' vem do token, que é adicionado ao req.user pelo authenticateToken
+    if (req.user && req.user.role === 'ADMIN') {
+        next();
+    } else {
+        return res.status(403).json({ message: 'Acesso Negado: Admin é necessário' });
+    }
+};
+
 // ==========================================================
-// ROTA DE REGISTO CORRIGIDA (AGORA COM VALIDAÇÃO DE DOMÍNIO)
+// ROTA DE REGISTO CORRIGIDA (DOMÍNIO + GÊNERO)
 // ==========================================================
 app.post('/register', async (req, res) => {
     const { firstName, lastName, email, password, driverLicenseId, gender, senacId } = req.body;
 
-    // 1. [NOVA VALIDAÇÃO] Definimos os domínios permitidos
-    const dominiosPermitidos = [
-      '@sp.senac.br',
-      '@senacsp.edu.br'
-    ];
-
-    // 2. [NOVA VALIDAÇÃO] Verificamos se o 'senacId' termina com um dos domínios
-    // Usamos 'some()' que verifica se 'pelo menos um' item na lista é verdadeiro
+    const dominiosPermitidos = ['@sp.senac.br', '@senacsp.edu.br'];
     const dominioValido = dominiosPermitidos.some(dominio => senacId.endsWith(dominio));
 
     if (!dominioValido) {
-      // 3. [NOVA VALIDAÇÃO] Se não for válido, rejeitamos o registo imediatamente.
       return res.status(400).json({ 
         message: 'ID Senac inválido. O e-mail institucional deve terminar com @sp.senac.br ou @senacsp.edu.br' 
       });
     }
 
-    // 4. [Tradução do Gênero] (A nossa correção anterior, que mantemos)
     let genderEnum;
     if (gender === 'masculino' || gender === 'MALE') {
       genderEnum = 'MALE';
@@ -58,7 +59,6 @@ app.post('/register', async (req, res) => {
       genderEnum = 'OTHER';
     }
 
-    // 5. [Lógica de Registo] (O resto do código que já tínhamos)
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) return res.status(400).json({ message: 'User already exists' });
@@ -79,9 +79,6 @@ app.post('/register', async (req, res) => {
         res.status(201).json({ message: 'User registered successfully', user: newUser });
     } catch (error) {
         console.error('Error:', error);
-        // [NOTA] Se o 'senacId' (ou 'email') for duplicado, o 'catch' aqui
-        // vai apanhar o erro da base de dados (P2002) e devolver 500.
-        // Isto pode ser melhorado no futuro para devolver um 400.
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
@@ -101,14 +98,64 @@ app.post('/login', async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(400).json({ message: 'Invalid email or password' });
 
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+        // [CORREÇÃO 1] Verificar o statusVerificacao (o campo correto no Schema)
+        if (user.statusVerificacao !== 'APROVADO') {
+            return res.status(403).json({ message: 'Usuário não aprovado. Contacte o Admin.' });
+        }
         
-        res.status(200).json({ message: 'Login successful', token });
+        // [CORREÇÃO 2] Incluir o role (cargo) no Token JWT
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role }, 
+            JWT_SECRET, 
+            { expiresIn: '1h' }
+        );
+        
+        // Devolver o role no response (resposta) para o frontend (opcional, mas útil)
+        res.status(200).json({ message: 'Login successful', token, role: user.role });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
+// ==========================================================
+// ROTA ADMIN: APROVAR/REPROVAR UTILIZADOR
+// ==========================================================
+// Protegida por authenticateToken E isAdmin
+app.patch('/admin/users/:userId/status', authenticateToken, isAdmin, async (req, res) => {
+    const { userId } = req.params;
+    const { status } = req.body;
+
+    // Validação de segurança: o status tem de ser um dos nossos ENUMs
+    if (!['PENDENTE', 'APROVADO', 'REPROVADO'].includes(status)) {
+        return res.status(400).json({ message: 'Status de verificação inválido' });
+    }
+
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: parseInt(userId) },
+            data: { statusVerificacao: status },
+            // Devolvemos apenas os campos essenciais
+            select: { id: true, email: true, statusVerificacao: true, role: true } 
+        });
+
+        res.status(200).json({ 
+            message: `Status do usuário ${userId} atualizado para ${status}`, 
+            user: updatedUser 
+        });
+
+    } catch (error) {
+        console.error('Error updating user status:', error);
+        if (error.code === 'P2025') {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+// ==========================================================
+// FIM DA ROTA ADMIN
+// ==========================================================
+
 
 // Protected Routes
 app.get('/protected/share', authenticateToken, (req, res) => {
@@ -180,7 +227,7 @@ app.post('/request-ride', authenticateToken, async (req, res) => {
         const newRequest = await prisma.request.create({
             data: {
                 shareId,
-                userId: req.user.id,
+                userId: req.user.id, 
                 message: message || null,
             },
         });
@@ -350,11 +397,8 @@ app.get('/trips/driving', authenticateToken, async (req, res) => {
     } catch (error) {
       console.error('Error updating request status:', error.message);
 
-      // ===============================================
-      // [A CORREÇÃO DO 4G4]
-      // ===============================================
       if (error.message === 'Request not found') {
-        return res.status(404).json({ message: 'Request not found' }); // <-- CORRIGIDO
+        return res.status(404).json({ message: 'Request not found' });
       }
       if (error.message === 'No spots available for this ride') {
         return res.status(400).json({ message: 'No spots available for this ride' });
