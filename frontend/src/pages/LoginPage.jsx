@@ -1,27 +1,31 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom'; // useLocation ADICIONADO
 import api from '../services/api'; 
-import { useNavigate } from 'react-router-dom'; 
-// 1. [NOVO] Importar o nosso hook 'useAuth'
-import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast'; 
+import { useAuth } from '../context/AuthContext'; // Importar o contexto
 
 /**
- * Página de Login - Atualizada para usar o AuthContext
+ * Página de Login - Versão com Layout Melhorado e Navegação Corrigida
  */
 function LoginPage() {
+  // Estados para o formulário
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Estados de feedback
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Hooks do React Router e do Contexto
   const navigate = useNavigate();
-  // 2. [NOVO] Pegar a função 'login' do nosso contexto
+  const location = useLocation(); // [CRUCIAL] Para ler a rota de destino guardada
   const { login } = useAuth(); 
 
-  // --- Os Estilos (styles) permanecem exatamente os mesmos ---
+  // --- Estilos CSS-in-JS (Consistentes com a RegisterPage) ---
   const styles = {
     pageContainer: {
       padding: '20px',
-      maxWidth: '400px',
+      maxWidth: '400px', 
       margin: '40px auto',
       border: '1px solid #ddd',
       borderRadius: '8px',
@@ -65,6 +69,9 @@ function LoginPage() {
   };
   // --- Fim dos Estilos ---
 
+  /**
+   * Função chamada quando o formulário de login é submetido
+   */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -76,43 +83,43 @@ function LoginPage() {
         password: password,
       });
 
+      // 1. SUCESSO! Guardamos o token no contexto
       const token = response.data.token;
-
-      // 3. [A GRANDE MUDANÇA]
-      // Em vez de mexer no localStorage e no axios aqui...
-      // localStorage.setItem('token', token);
-      // api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      // ...nós apenas chamamos a nossa função 'login' centralizada!
       login(token); 
+      
+      toast.success("Login bem-sucedido! Sincronizando com a aplicação...");
 
-      // A função 'login' (dentro do AuthContext) vai fazer tudo isso
-      // e, o mais importante, vai ATUALIZAR O ESTADO GLOBAL.
-
-      // 4. Redirecionamos o utilizador
-      navigate('/'); // Ou '/viagens'
+      // 2. [CORREÇÃO DE NAVEGAÇÃO] Redirecionar para a rota de destino guardada
+      // O 'location.state?.from?.pathname' lê a rota guardada pelo ProtectedRoute
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true }); 
 
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
+      // 3. FALHA
+      if (err.response && err.response.data) {
+        // Usa a mensagem devolvida pelo Backend (ex: "Usuário não aprovado")
+        setError(err.response.data.message || 'Erro no login. Credenciais inválidas.');
       } else {
-        setError('Ocorreu um erro. Tente novamente.');
+        setError('Ocorreu um erro. Verifique sua conexão com a API.');
       }
       console.error("Falha no login:", err);
     } finally {
+      // 4. Paramos o loading
       setLoading(false);
     }
   };
 
-  // O JSX (HTML) permanece exatamente o mesmo
+  // 5. O JSX (HTML)
   return (
     <div style={styles.pageContainer}>
       <h2>Login - TitoGo</h2>
       
       <form onSubmit={handleLogin} style={styles.form}>
         
+        {/* Mostra o erro, se existir */}
         {error && <p style={styles.errorMsg}>{error}</p>}
 
+        {/* Campo de Email */}
         <div style={styles.inputGroup}>
           <label htmlFor="email">Email:</label>
           <input
@@ -126,6 +133,7 @@ function LoginPage() {
           />
         </div>
         
+        {/* Campo de Senha */}
         <div style={styles.inputGroup}>
           <label htmlFor="password">Senha:</label>
           <input
@@ -139,6 +147,7 @@ function LoginPage() {
           />
         </div>
         
+        {/* Botão de Submissão */}
         <button 
           type="submit" 
           disabled={loading}
